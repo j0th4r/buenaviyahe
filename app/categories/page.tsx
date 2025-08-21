@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { ArrowLeft, MapPin } from 'lucide-react'
 import { useCategories } from "@/lib/api"
+import { getImageUrl } from "@/lib/utils/image"
+import type { Category as DbCategory } from "@/lib/api/categories"
 
 export default function CategoriesPage() {
   const { data: categories, loading, error } = useCategories()
@@ -74,13 +76,7 @@ export default function CategoriesPage() {
 }
 
 interface CategoryCardProps {
-  category: {
-    id: string
-    name: string
-    description: string
-    image: string
-    priceRange: string
-  }
+  category: DbCategory
 }
 
 function CategoryCard({ category }: CategoryCardProps) {
@@ -91,7 +87,7 @@ function CategoryCard({ category }: CategoryCardProps) {
     >
       <div className="aspect-[4/3] overflow-hidden">
         <img
-          src={category.image || "/placeholder.svg?height=240&width=320"}
+          src={getImageUrl(category.image) || "/placeholder.svg?height=240&width=320"}
           alt={category.name}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
@@ -107,7 +103,7 @@ function CategoryCard({ category }: CategoryCardProps) {
         </p>
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-teal-600">
-            {category.priceRange}
+            {category.price_range}
           </span>
           <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">
             Explore →

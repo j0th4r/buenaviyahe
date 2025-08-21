@@ -22,7 +22,9 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import {appendSpot, getItinerary} from '@/lib/itinerary-store';
-import {useSpot, type Spot} from '@/lib/api';
+import {useSpot} from '@/lib/api';
+import type { Spot as DbSpot } from '@/lib/api/spots'
+import { getImageUrl } from '@/lib/utils/image'
 
 function clampIndex(i: number, len: number) {
   return ((i % len) + len) % len;
@@ -95,7 +97,7 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
           {spot.images.map((src, i) => (
             <img
               key={src + i}
-              src={src || '/placeholder.svg'}
+              src={getImageUrl(src) || '/placeholder.svg'}
               alt={`${spot.title} photo ${i + 1}`}
               crossOrigin="anonymous"
               className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
@@ -195,7 +197,7 @@ function PlanDrawer({
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  spot: Spot;
+  spot: DbSpot;
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -204,20 +206,20 @@ function PlanDrawer({
   const hasItinerary = !!getItinerary();
   const isAppending = appendMode || hasItinerary;
 
-  const pricePerNight = spot.pricing.pricePerNight;
+  const pricePerNight = (spot.pricing as any)?.pricePerNight || 100;
 
   const handlePrimary = useCallback(() => {
     if (isAppending) {
       appendSpot(
         {
           title: spot.title,
-          image: spot.images[0],
+          image: getImageUrl(spot.images[0]),
           location: spot.location,
           rating: spot.rating,
           time: '09:00',
           pricePerNight,
-          lat: spot.lat,
-          lng: spot.lng,
+          lat: spot.lat ?? undefined,
+          lng: spot.lng ?? undefined,
         },
         Number.isFinite(dayParam) && dayParam > 0 ? dayParam : 1
       );
@@ -228,7 +230,7 @@ function PlanDrawer({
     const url = `/planner/new?title=${encodeURIComponent(
       spot.title
     )}&image=${encodeURIComponent(
-      spot.images[0]
+      getImageUrl(spot.images[0])
     )}&location=${encodeURIComponent(
       spot.location
     )}&price=${pricePerNight}&rating=${spot.rating}&time=09:00&lat=${
@@ -262,7 +264,7 @@ function PlanDrawer({
                   </div>
                   <div>
                     <p className="font-semibold text-gray-800">1 Night</p>
-                    <p className="text-gray-500">{spot.pricing.oneNight}</p>
+                    <p className="text-gray-500">{(spot.pricing as any)?.oneNight || 'Price not available'}</p>
                   </div>
                 </div>
                 <ChevronRightSmall className="h-5 w-5 text-gray-400" />
@@ -274,7 +276,7 @@ function PlanDrawer({
                   </div>
                   <div>
                     <p className="font-semibold text-gray-800">2 Nights</p>
-                    <p className="text-gray-500">{spot.pricing.twoNights}</p>
+                    <p className="text-gray-500">{(spot.pricing as any)?.twoNights || 'Price not available'}</p>
                   </div>
                 </div>
                 <ChevronRightSmall className="h-5 w-5 text-gray-400" />

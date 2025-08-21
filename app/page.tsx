@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { Search, SlidersHorizontal, Star } from 'lucide-react'
 import { cn } from "@/lib/utils"
 import { usePopularSpots, useCategories, searchSpots } from "@/lib/api"
+import { getImageUrl } from "@/lib/utils/image"
 import { Suspense, useState, useEffect } from 'react'
 import { BottomTabs } from "@/components/ui/bottom-tabs"
  
@@ -131,7 +132,7 @@ function PageContent() {
                         title={spot.title}
                         price={spot?.pricing?.oneNight ?? ""}
                         rating={Number(spot?.rating ?? 0).toString()}
-                        img={spot?.images?.[0] || "/placeholder.svg?height=180&width=320"}
+                        img={getImageUrl(spot?.images?.[0] || "/placeholder.svg?height=180&width=320")}
                         href={withForward(`/spots/${spot.slug}`)}
                       />
                     </li>
@@ -164,7 +165,7 @@ function PageContent() {
                         title={spot.title} 
                         price={spot.pricing.oneNight} 
                         rating={spot.rating.toString()} 
-                        img={spot.images[0] || "/placeholder.svg?height=180&width=320"} 
+                        img={getImageUrl(spot.images[0] || "/placeholder.svg?height=180&width=320")} 
                         href={withForward(`/spots/${spot.slug}`)} 
                       />
                     </li>
@@ -204,7 +205,7 @@ function PageContent() {
                       <CategoryCard 
                         title={category.name} 
                         price={category.price_range} 
-                        img={category.image || "/placeholder.svg?height=260&width=200"} 
+                        img={getImageUrl(category.image || "/placeholder.svg?height=260&width=200")} 
                         href={withForward(`/categories/${category.id}`)} 
                       />
                     </li>

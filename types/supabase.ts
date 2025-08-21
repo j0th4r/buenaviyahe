@@ -9,6 +9,59 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      spots: {
+        Row: {
+          id: string
+          title: string
+          slug: string
+          location: string
+          description: string
+          tags: string[]
+          images: string[]
+          rating: number
+          reviews: number
+          pricing: Json
+          amenities: string[]
+          lat: number | null
+          lng: number | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          title: string
+          slug: string
+          location: string
+          description: string
+          tags: string[]
+          images: string[]
+          rating: number
+          reviews: number
+          pricing: Json
+          amenities: string[]
+          lat?: number | null
+          lng?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          slug?: string
+          location?: string
+          description?: string
+          tags?: string[]
+          images?: string[]
+          rating?: number
+          reviews?: number
+          pricing?: Json
+          amenities?: string[]
+          lat?: number | null
+          lng?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
       itineraries: {
         Row: {
           id: string

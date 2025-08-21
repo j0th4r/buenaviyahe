@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams, notFound } from "next/navigation"
 import { ArrowLeft, Star, Filter, Grid3X3 } from 'lucide-react'
 import { useCategory, useSpotsByCategory } from "@/lib/api"
+import { getImageUrl } from "@/lib/utils/image"
 import { cn } from "@/lib/utils"
 
 interface CategoryPageProps {
@@ -73,7 +74,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                   Discover {category.name}
                 </h2>
                 <p className="text-teal-100 mb-4">
-                  Starting {category.priceRange}
+                  Starting {category.price_range}
                 </p>
               </div>
               <div className="text-right">
@@ -165,9 +166,7 @@ interface SpotCardProps {
     location: string
     images: string[]
     rating: number
-    pricing: {
-      oneNight: string
-    }
+    pricing: any
   }
   href: string
 }
@@ -180,7 +179,7 @@ function SpotCard({ spot, href }: SpotCardProps) {
     >
       <div className="aspect-[4/3] overflow-hidden">
         <img
-          src={spot.images[0] || "/placeholder.svg?height=240&width=320"}
+          src={getImageUrl(spot.images[0] || "/placeholder.svg?height=240&width=320")}
           alt={spot.title}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
@@ -203,7 +202,7 @@ function SpotCard({ spot, href }: SpotCardProps) {
             </span>
           </div>
           <span className="text-sm font-semibold text-teal-600">
-            {spot.pricing.oneNight}
+            {spot.pricing?.oneNight || 'Price not available'}
           </span>
         </div>
       </div>

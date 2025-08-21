@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/drawer';
 import {getItinerary as getItineraryFromAPI} from '@/lib/api';
 import type {Itinerary} from '@/lib/itinerary-store';
+import { getImageUrl } from '@/lib/utils/image';
 
 // A default center, in case no spots are available
 const defaultCenter = { lat: 8.9731834, lng: 125.4085344 }
@@ -623,9 +624,7 @@ export default function ItineraryMapPage() {
                     <img
                       alt={spot.title}
                       className="mb-4 h-40 w-full rounded-xl object-cover"
-                      src={
-                        spot.image || '/placeholder.svg?height=160&width=256'
-                      }
+                      src={getImageUrl(spot.image || '/placeholder.svg?height=160&width=256')}
                       crossOrigin="anonymous"
                     />
                     <h3 className="font-bold text-lg text-gray-800">

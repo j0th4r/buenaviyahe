@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState, Suspense } from 'react'
-import { Calendar, MapPin, Clock, Plus, Trash2, Edit2 } from 'lucide-react'
-import { cn } from "@/lib/utils"
-import { useItineraries } from "@/lib/api"
-import type { Itinerary } from "@/lib/itinerary-store"
+import { Calendar, Clock, Plus, Search } from 'lucide-react'
+import { useItineraries } from '@/lib/api'
+import { getImageUrl } from '@/lib/utils/image'
+import { Suspense, useState, useEffect } from 'react'
 import { BottomTabs } from "@/components/ui/bottom-tabs"
+import { cn } from "@/lib/utils"
+import type { Itinerary } from "@/lib/itinerary-store"
 import { useAuth } from '@/hooks/use-auth'
 
 function PlansPageContent() {
@@ -278,7 +279,7 @@ function ItineraryCard({ itinerary }: ItineraryCardProps) {
       {displayImage && (
         <div className="mb-4 -mx-6 -mt-6">
           <img
-            src={displayImage}
+            src={getImageUrl(displayImage)}
             alt={itinerary.title || 'Itinerary'}
             className="w-full h-32 object-cover rounded-t-3xl"
           />
