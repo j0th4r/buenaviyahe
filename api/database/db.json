@@ -1,0 +1,301 @@
+{
+  "spots": [
+    {
+      "id": "ocean-bloom",
+      "title": "Ocean Bloom Botique Beach Resort",
+      "slug": "ocean-bloom",
+      "location": "Manapa, Buenavista, Agusan del Norte",
+      "description": "A family-run boutique resort that combines Mediterranean and rustic Filipino design into a unique and memorable resort experience. With our love for nature and the sea.",
+      "tags": [
+        "beaches",
+        "popular",
+        "featured"
+      ],
+      "images": [
+        "/images/spots/ocean-bloom/main.jpg",
+        "/images/spots/ocean-bloom/gallery-1.jpg",
+        "/images/spots/ocean-bloom/gallery-2.jpg"
+      ],
+      "rating": 4.79,
+      "reviews": 78,
+      "pricing": {
+        "oneNight": "from ₱100",
+        "twoNights": "from ₱150",
+        "pricePerNight": 100
+      },
+      "amenities": [
+        "Beach Access",
+        "Restaurant",
+        "Wi-Fi",
+        "Pool"
+      ],
+      "createdAt": "2024-01-15T08:00:00Z",
+      "updatedAt": "2024-01-20T10:30:00Z",
+      "lat": 8.9801432,
+      "lng": 125.440978
+    },
+    {
+      "id": "alicias-ridge",
+      "title": "Alicia's Ridge",
+      "slug": "alicias-ridge",
+      "location": "Brgy. Sangay, Buenavista, Agusan del Norte",
+      "description": "It offers a serene and peaceful environment with fresh air, great views, and accommodations. The park is known for its nature-focused atmosphere, making it a popular spot for relaxation and recreation.",
+      "tags": [
+        "parks",
+        "popular"
+      ],
+      "images": [
+        "/images/spots/alicias-ridge/main.jpg",
+        "/images/spots/alicias-ridge/gallery-1.jpg",
+        "/images/spots/alicias-ridge/gallery-2.jpg"
+      ],
+      "rating": 4.9,
+      "reviews": 45,
+      "pricing": {
+        "oneNight": "from ₱120",
+        "twoNights": "from ₱200",
+        "pricePerNight": 120
+      },
+      "amenities": [
+        "Hiking Trails",
+        "Restaurant",
+        "Wi-Fi",
+        "Mountain Views"
+      ],
+      "createdAt": "2024-01-10T09:00:00Z",
+      "updatedAt": "2024-01-18T15:45:00Z",
+      "lat": 8.8652592,
+      "lng": 125.4360443
+    },
+    {
+      "id": "municipal-playground",
+      "title": "Buenavista Municipal Playground",
+      "slug": "municipal-playground",
+      "location": "Brgy. 9, Buenavista, Agusan del Norte",
+      "description": "The park aims to provide a safe and enjoyable environment for children to play and interact, contributing to the overall well-being of the community.",
+      "tags": [
+        "parks",
+        "featured",
+        "popular"
+      ],
+      "images": [
+        "/images/spots/municipal-playground/main.jpg",
+        "/images/spots/municipal-playground/gallery-1.jpg"
+      ],
+      "rating": 4.85,
+      "reviews": 203,
+      "pricing": {
+        "oneNight": "from ₱150",
+        "twoNights": "from ₱280",
+        "pricePerNight": 150
+      },
+      "amenities": [
+        "Private Beach",
+        "Spa",
+        "Fine Dining",
+        "Water Sports"
+      ],
+      "createdAt": "2024-01-05T06:20:00Z",
+      "updatedAt": "2024-01-21T09:15:00Z",
+      "lat": 8.9806775,
+      "lng": 125.4094438
+    },
+    {
+      "id": "municipal-kiosk",
+      "title": "Buenavista Municipal Kiosk",
+      "slug": "municipal-kiosk",
+      "location": "Buenavista, Agusan Del Norte",
+      "description": "Adventure awaits at our cliff-side park featuring zip-lines, rock climbing, and spectacular views. Perfect for thrill-seekers and adventure enthusiasts.",
+      "tags": [
+        "parks"
+      ],
+      "images": [
+        "/images/spots/municipal-kiosk/main.jpg",
+        "/images/spots/municipal-kiosk/gallery-1.jpg",
+        "/images/spots/municipal-kiosk/gallery-2.jpg"
+      ],
+      "rating": 4.7,
+      "reviews": 89,
+      "pricing": {
+        "oneNight": "from ₱110",
+        "twoNights": "from ₱190",
+        "pricePerNight": 110
+      },
+      "amenities": [
+        "Zip Line",
+        "Rock Climbing",
+        "Hiking",
+        "Adventure Guides"
+      ],
+      "createdAt": "2024-01-14T13:25:00Z",
+      "updatedAt": "2024-01-22T16:40:00Z",
+      "lat": 8.9796721,
+      "lng": 125.4087613
+    }
+  ],
+  "categories": [
+    {
+      "id": "beaches",
+      "name": "Beaches",
+      "description": "Beautiful beachfront locations with pristine sand and crystal waters",
+      "image": "/images/categories/beaches.jpg",
+      "priceRange": "from ₱100"
+    },
+    {
+      "id": "parks",
+      "name": "Parks",
+      "description": "Fun-filled water adventures for families and thrill seekers",
+      "image": "/images/categories/parks.jpg",
+      "priceRange": "from ₱80"
+    }
+  ],
+  "itineraries": [
+    {
+      "id": "7f6842bc-4b5c-411e-bfc3-5e517101f707",
+      "title": "Seanie's Trip",
+      "location": "Brgy. Sangay, Buenavista, Agusan del Norte",
+      "image": "/images/spots/alicias-ridge/main.jpg",
+      "start": "2024-08-20",
+      "end": "2024-08-20",
+      "days": {
+        "1": [
+          {
+            "id": "51bcbc90-fc79-4283-8e68-acdbf3f545ab",
+            "title": "Alicia's Ridge",
+            "image": "/images/spots/alicias-ridge/main.jpg",
+            "location": "Brgy. Sangay, Buenavista, Agusan del Norte",
+            "pricePerNight": 120,
+            "rating": 4.9,
+            "lat": 8.8652592,
+            "lng": 125.4360443,
+            "time": "09:00"
+          },
+          {
+            "id": "16c6a38b-84b8-4682-a260-62398136f45b",
+            "title": "Buenavista Municipal Playground",
+            "image": "/images/spots/municipal-playground/main.jpg",
+            "location": "Brgy. 9, Buenavista, Agusan del Norte",
+            "rating": 4.85,
+            "time": "10:00",
+            "pricePerNight": 150,
+            "lat": 8.9806775,
+            "lng": 125.4094438
+          },
+          {
+            "id": "63aa3eb0-bf38-4bfe-92c4-f31094bf6a2e",
+            "title": "Ocean Bloom Botique Beach Resort",
+            "image": "/images/spots/ocean-bloom/main.jpg",
+            "location": "Manapa, Buenavista, Agusan del Norte",
+            "rating": 4.79,
+            "time": "09:00",
+            "pricePerNight": 100,
+            "lat": 8.9801432,
+            "lng": 125.440978
+          }
+        ]
+      },
+      "spots": [],
+      "createdAt": "2025-08-20T11:38:35.211524Z",
+      "updatedAt": "2025-08-20T11:38:35.211524Z"
+    },
+    {
+      "id": "1e353de8-379c-46ec-8aee-33904e93a333",
+      "title": "Trip",
+      "start": "2024-08-01",
+      "end": "2024-08-02",
+      "days": {
+        "1": [
+          {
+            "id": "4e969a0e-a5b9-40c0-8dae-09c56fedc35b",
+            "title": "Ocean Bloom Botique Beach Resort",
+            "image": "/images/spots/ocean-bloom/main.jpg",
+            "location": "Manapa, Buenavista, Agusan del Norte",
+            "rating": 4.79,
+            "time": "09:00",
+            "pricePerNight": 100,
+            "lat": 8.9801432,
+            "lng": 125.440978
+          }
+        ],
+        "2": [
+          {
+            "id": "64c55870-1491-465c-8690-d6b48ffa1af4",
+            "title": "Alicia's Ridge",
+            "image": "/images/spots/alicias-ridge/main.jpg",
+            "location": "Brgy. Sangay, Buenavista, Agusan del Norte",
+            "rating": 4.9,
+            "time": "09:00",
+            "pricePerNight": 120,
+            "lat": 8.8652592,
+            "lng": 125.4360443
+          }
+        ]
+      },
+      "spots": [],
+      "createdAt": "2025-08-20T14:34:48.039375Z",
+      "updatedAt": "2025-08-20T14:34:48.039375Z"
+    },
+    {
+      "id": "caa1693c-990e-4b47-98dc-cd9aaa0d24f2",
+      "title": "trip 2",
+      "start": "2024-08-01",
+      "end": "2024-08-01",
+      "days": {
+        "1": [
+          {
+            "id": "285aacf5-bb30-47fd-86c1-38dbb70d07ba",
+            "title": "Alicia's Ridge",
+            "image": "/images/spots/alicias-ridge/main.jpg",
+            "location": "Brgy. Sangay, Buenavista, Agusan del Norte",
+            "rating": 4.9,
+            "time": "09:00",
+            "pricePerNight": 120,
+            "lat": 8.8652592,
+            "lng": 125.4360443
+          }
+        ]
+      },
+      "spots": [],
+      "createdAt": "2025-08-20T14:58:40.654412Z",
+      "updatedAt": "2025-08-20T14:58:40.654412Z"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "rev001",
+      "spotId": "ocean-bloom",
+      "userName": "Maria Santos",
+      "userAvatar": "/placeholder-user.jpg",
+      "rating": 5,
+      "comment": "Amazing beach resort! The staff was incredibly friendly and the view was breathtaking.",
+      "date": "2024-01-20T10:30:00Z"
+    },
+    {
+      "id": "rev002",
+      "spotId": "municipal-playground",
+      "userName": "John Dela Cruz",
+      "userAvatar": "/placeholder-user.jpg",
+      "rating": 5,
+      "comment": "Perfect romantic getaway. The sunset views are absolutely stunning!",
+      "date": "2024-01-19T15:45:00Z"
+    },
+    {
+      "id": "rev003",
+      "spotId": "municipal-playground",
+      "userName": "The Gonzalez Family",
+      "userAvatar": "/placeholder-user.jpg",
+      "rating": 4,
+      "comment": "Kids had a blast! Great family destination with lots of activities.",
+      "date": "2024-01-18T09:20:00Z"
+    }
+  ],
+  "profile": {
+    "name": "Jowehl",
+    "city": "Ambago, Agusan del Norte, Philippines",
+    "website": "jotjot.com",
+    "about": "I’m a traveler at heart who loves exploring new places, discovering hidden gems, and creating memorable adventures wherever I go.",
+    "joinedYear": 2025,
+    "contributions": 0,
+    "avatarUrl": "/uploads/avatar_1755665481.jpg"
+  }
+}

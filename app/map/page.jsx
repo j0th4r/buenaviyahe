@@ -1,0 +1,381 @@
+"use client"
+
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react"
+import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow, useMap } from "@vis.gl/react-google-maps"
+import { Star, StarHalf, Crosshair } from "lucide-react"
+import { BottomTabs } from "@/components/ui/bottom-tabs"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import { getSpots } from "@/lib/api"
+
+const defaultCenter = { lat: 8.9731834, lng: 125.4085344 }
+
+function MapReady({ onReady }) {
+  const map = useMap()
+  useEffect(() => {
+    if (map) onReady(map)
+  }, [map, onReady])
+  return null
+}
+
+export default function MapPage() {
+  const [spots, setSpots] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [selected, setSelected] = useState(null)
+  const [center, setCenter] = useState(defaultCenter)
+  const [zoom, setZoom] = useState(12)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [mapTypeId, setMapTypeId] = useState("satellite")
+  const [locationLoading, setLocationLoading] = useState(true)
+  const [userLocation, setUserLocation] = useState(null)
+  const mapRef = useRef(null)
+
+  // Get user's current location
+  useEffect(() => {
+    let cancelled = false
+    
+    const getUserLocation = () => {
+      if (!navigator.geolocation) {
+        console.log("Geolocation not supported")
+        setLocationLoading(false)
+        return
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          if (!cancelled) {
+            const location = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            }
+            setCenter(location)
+            setUserLocation(location)
+            setLocationLoading(false)
+            console.log("User location found:", location)
+          }
+        },
+        (error) => {
+          if (!cancelled) {
+            console.log("Geolocation error:", error.message)
+            setLocationLoading(false)
+            // Keep default center if location access is denied
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes
+        }
+      )
+    }
+
+    getUserLocation()
+    
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Load spots data
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      try {
+        setLoading(true)
+        const all = await getSpots()
+        const withCoords = (all || []).filter(s => typeof s.lat === "number" && typeof s.lng === "number")
+        if (!cancelled) setSpots(withCoords)
+      } catch (e) {
+        if (!cancelled) setError("Failed to load spots")
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Remove the initialCenter logic since we're using user location or default center directly
+
+  // Remove fitBoundsToSpots function since we're removing the Show All Spots button
+
+  // Recenter map on user's location
+  const recenterOnUser = useCallback(() => {
+    if (!mapRef.current || !userLocation) return
+    mapRef.current.panTo(userLocation)
+    mapRef.current.setZoom(15)
+  }, [userLocation])
+
+  const handleSpotClick = useCallback((spot) => {
+    if (spot.lat && spot.lng && mapRef.current) {
+      mapRef.current.panTo({ lat: spot.lat, lng: spot.lng })
+      mapRef.current.setZoom(15)
+    }
+    setIsDrawerOpen(false)
+  }, [])
+
+  // Rating component
+  const Rating = ({ value }) => {
+    const full = Math.floor(value)
+    const half = value % 1 >= 0.5
+    const empty = Math.max(0, 5 - full - (half ? 1 : 0))
+    return (
+      <div className="my-2 flex items-center">
+        {Array.from({ length: full }).map((_, i) => (
+          <Star
+            key={`f-${i}`}
+            className="h-5 w-5 fill-yellow-400 text-yellow-400"
+          />
+        ))}
+        {half && (
+          <StarHalf className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+        )}
+        {Array.from({ length: empty }).map((_, i) => (
+          <Star key={`e-${i}`} className="h-5 w-5 text-gray-300" />
+        ))}
+      </div>
+    )
+  }
+
+  if (loading || locationLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
+        <span className="ml-3 text-lg text-gray-600">
+          {locationLoading ? "Getting your location..." : "Loading map..."}
+        </span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <h3 className="mb-2 text-lg font-semibold text-gray-900">{error}</h3>
+          <p className="text-gray-600">Please try again later.</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""} libraries={["marker"]}>
+      <div className="relative h-screen w-full bg-gray-100">
+        <Map
+          center={center}
+          zoom={zoom}
+          onCenterChanged={e => setCenter(e.detail.center)}
+          onZoomChanged={e => setZoom(e.detail.zoom)}
+          mapId="6663354a9d71030a54d32b1a"
+          gestureHandling="greedy"
+          disableDefaultUI={true}
+          mapTypeId={mapTypeId}
+          className="h-full w-full"
+          options={{
+            styles: [
+              {
+                featureType: "poi",
+                stylers: [{ visibility: "off" }]
+              },
+              {
+                featureType: "poi.business",
+                stylers: [{ visibility: "off" }]
+              },
+              {
+                featureType: "poi.park",
+                stylers: [{ visibility: "off" }]
+              },
+              {
+                featureType: "poi.attraction",
+                stylers: [{ visibility: "off" }]
+              },
+              {
+                featureType: "poi.government",
+                stylers: [{ visibility: "off" }]
+              },
+              {
+                featureType: "poi.medical",
+                stylers: [{ visibility: "off" }]
+              },
+              {
+                featureType: "poi.place_of_worship",
+                stylers: [{ visibility: "off" }]
+              },
+              {
+                featureType: "poi.school",
+                stylers: [{ visibility: "off" }]
+              },
+              {
+                featureType: "poi.sports_complex",
+                stylers: [{ visibility: "off" }]
+              },
+              {
+                featureType: "transit",
+                stylers: [{ visibility: "off" }]
+              },
+              {
+                featureType: "transit.station",
+                stylers: [{ visibility: "off" }]
+              }
+            ],
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            zoomControl: false,
+            clickableIcons: false
+          }}
+        >
+          <MapReady onReady={m => (mapRef.current = m)} />
+          
+          {/* User location marker */}
+          {userLocation && (
+            <AdvancedMarker
+              position={userLocation}
+              title="Your Location"
+            >
+              <div className="flex items-center justify-center w-6 h-6 bg-blue-500 border-2 border-white rounded-full shadow-lg">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+              </div>
+            </AdvancedMarker>
+          )}
+          
+          {/* Travel spots markers */}
+          {spots.map((spot, idx) => (
+            <AdvancedMarker
+              key={spot.id}
+              position={{ lat: spot.lat, lng: spot.lng }}
+              onClick={() => setSelected(spot)}
+            >
+              <Pin background="#FFD700" borderColor="#B8860B" glyphColor="#B8860B">
+              </Pin>
+            </AdvancedMarker>
+          ))}
+
+          {selected && (
+            <InfoWindow
+              position={{ lat: selected.lat, lng: selected.lng }}
+              onCloseClick={() => setSelected(null)}
+              headerContent={<h4 className="font-bold text-[#B8860B]">{selected.title}</h4>}
+            >
+              <div className="text-sm">
+                <p className="mb-2 text-gray-700">{selected.location}</p>
+                <a
+                  className="text-teal-600 hover:text-teal-700 font-medium"
+                  href={`/spots/${selected.slug}`}
+                >
+                  View details
+                </a>
+              </div>
+            </InfoWindow>
+          )}
+        </Map>
+
+        {/* Map Controls */}
+        <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
+          <div className="flex rounded-full bg-white p-1 shadow-md">
+            <button
+              onClick={() => setMapTypeId("roadmap")}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                mapTypeId === "roadmap"
+                  ? "bg-teal-500 text-white"
+                  : "bg-transparent text-gray-800 hover:bg-gray-100"
+              }`}
+            >
+              Road
+            </button>
+            <button
+              onClick={() => setMapTypeId("satellite")}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                mapTypeId === "satellite"
+                  ? "bg-teal-500 text-white"
+                  : "bg-transparent text-gray-800 hover:bg-gray-100"
+              }`}
+            >
+              Satellite
+            </button>
+          </div>
+          {userLocation && (
+            <button
+              onClick={recenterOnUser}
+              className="flex items-center justify-center w-10 h-10 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
+              title="My Location"
+            >
+              <Crosshair className="w-5 h-5 text-gray-700" />
+            </button>
+          )}
+        </div>
+
+        {/* Bottom Drawer */}
+        <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+          <DrawerTrigger asChild>
+            <button className="absolute bottom-24 left-1/2 -translate-x-1/2 z-10 bg-teal-500 text-white text-sm px-6 py-3 rounded-full shadow-lg hover:bg-teal-600 transition-colors font-bold">
+              Discover
+            </button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader className="text-left pl-6">
+              <DrawerTitle className="text-left text-2xl font-bold">
+                Must-see attractions
+              </DrawerTitle>
+            </DrawerHeader>
+            <div className="px-4 pb-4">
+              <div className="flex space-x-4 overflow-x-auto pb-4">
+                {spots.map((spot) => (
+                  <div
+                    key={spot.id}
+                    onClick={() => handleSpotClick(spot)}
+                    className="w-64 flex-shrink-0 cursor-pointer rounded-2xl border bg-white p-4 shadow-md hover:shadow-lg transition-shadow"
+                  >
+                    <img
+                      alt={spot.title}
+                      className="mb-4 h-40 w-full rounded-xl object-cover"
+                      src={spot.images?.[0] || "/placeholder.svg?height=160&width=256"}
+                      crossOrigin="anonymous"
+                    />
+                    <h3 className="font-bold text-lg text-gray-800">
+                      {spot.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-2">{spot.location}</p>
+                    <Rating value={spot.rating || 4.5} />
+                    <div className="mt-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">from</p>
+                        <p className="font-semibold text-gray-800">
+                          {spot.pricing?.oneNight || "₱100 / night"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {spots.length === 0 && (
+                  <div className="w-full py-8 text-center text-gray-500">
+                    <p className="text-lg font-medium">
+                      No spots available
+                    </p>
+                    <p className="text-sm">
+                      Check back later for new destinations
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
+
+        <BottomTabs />
+      </div>
+    </APIProvider>
+  )
+}
+
+
