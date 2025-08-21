@@ -7,7 +7,7 @@
 
 // Client and configuration
 export { apiClient, ApiClient, ApiClientError, buildUrl } from './client'
-export { API_BASE_URL, API_ENDPOINTS, REQUEST_CONFIG, CACHE_CONFIG, QUERY_KEYS } from './config'
+export { API_ENDPOINTS, REQUEST_CONFIG, CACHE_CONFIG, QUERY_KEYS } from './config'
 
 // API functions
 export * from './spots'

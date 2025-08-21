@@ -4,7 +4,7 @@
  * Low-level API client with error handling, retries, and request/response interceptors.
  */
 
-import { API_BASE_URL, REQUEST_CONFIG } from './config'
+import { REQUEST_CONFIG } from './config'
 import type { ApiResponse, ApiError } from '../../api/types/index'
 
 // Custom error class for API errors
@@ -32,7 +32,7 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 // Utility function to build URL with query parameters
 export function buildUrl(endpoint: string, params?: Record<string, any>): string {
-  const url = new URL(endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`)
+  const url = new URL(endpoint.startsWith('http') ? endpoint : endpoint)
   
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
@@ -49,7 +49,7 @@ export function buildUrl(endpoint: string, params?: Record<string, any>): string
 class ApiClient {
   private baseUrl: string
 
-  constructor(baseUrl: string = API_BASE_URL) {
+  constructor(baseUrl: string = '') {
     this.baseUrl = baseUrl
   }
 
