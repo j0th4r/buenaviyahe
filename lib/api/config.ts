@@ -5,7 +5,6 @@
  */
 
 // API Base URL - can be overridden via environment variable
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
 
 // API Endpoints
 export const API_ENDPOINTS = {
