@@ -96,7 +96,7 @@ export default function EditProfilePage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-700"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
 
@@ -108,7 +108,7 @@ export default function EditProfilePage() {
                 type="text"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-700"
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
               <Search className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
             </div>
@@ -122,7 +122,7 @@ export default function EditProfilePage() {
               placeholder="Add a website"
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-700"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
 
@@ -134,7 +134,7 @@ export default function EditProfilePage() {
               placeholder="Write some details about yourself"
               value={about}
               onChange={(e) => setAbout(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-700"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
         </div>
