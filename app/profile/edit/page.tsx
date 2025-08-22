@@ -5,10 +5,11 @@ import { ArrowLeft, Camera, Search } from "lucide-react"
 import { getProfile, updateProfile, uploadAvatar, updateProfileWithAvatar } from "@/lib/api/profile"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { toast } from "react-toastify"
+import { useToast } from "@/hooks/use-toast"
 
 export default function EditProfilePage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [name, setName] = useState("")
   const [city, setCity] = useState("")
   const [website, setWebsite] = useState("")
@@ -43,9 +44,17 @@ export default function EditProfilePage() {
       setAvatarUrl(updatedProfile.avatarUrl || "/placeholder-user.jpg")
       
       // Show success message
-      toast.success('Avatar updated successfully!')
+      toast({
+        title: "Success",
+        description: "Avatar updated successfully!",
+        variant: "success",
+      })
     } catch (error) {
-      toast.error('Failed to upload avatar')
+      toast({
+        title: "Error",
+        description: "Failed to upload avatar",
+        variant: "destructive",
+      })
       console.error(error)
     } finally {
       setIsUploading(false)

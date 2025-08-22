@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import {useEffect, useState, useCallback} from 'react';
 import {useRouter, useSearchParams, notFound} from 'next/navigation';
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion} from 'framer-motion';
 import {
   ArrowLeft,
   ChevronLeft,

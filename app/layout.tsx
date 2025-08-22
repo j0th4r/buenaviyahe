@@ -3,6 +3,7 @@ import { Bai_Jamjuree } from 'next/font/google'
 import { Baloo_2 } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/components/auth-provider'
+import { Toaster } from '@/components/ui/toaster'
 
 // Initialize Bai Jamjuree font
 const baiJamjuree = Bai_Jamjuree({ 
@@ -50,6 +51,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
         </AuthProvider>
+        <Toaster />
       </body>
     </html>
   )
