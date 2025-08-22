@@ -152,7 +152,7 @@ export default function NewPlanPage() {
           <h2 className="text-lg font-semibold mb-2">Sign in required</h2>
           <p className="text-gray-600 mb-4">Please sign in to create a travel plan</p>
           <a 
-            href="/auth" 
+            href="/auth/login" 
             className="inline-block rounded-full bg-teal-400 px-6 py-3 text-white font-semibold hover:bg-teal-500"
           >
             Sign In

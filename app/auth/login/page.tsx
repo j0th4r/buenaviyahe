@@ -106,7 +106,7 @@ export default function AuthPage() {
         {/* Logo Section */}
         <div className="relative z-10 text-center">
             <Image
-              src={require("../../public/logo.png")}
+              src={require("@/public/logo.png")}
               alt="Buena Viyahe Logo"
               width={300}
               height={161}
@@ -229,7 +229,16 @@ export default function AuthPage() {
           </div>
 
           {/* Sign Up Link */}
-          <div className="text-center">
+          <p className="text-gray-600 text-center">
+            Don't have an account?
+            <Link href={'/auth/register'}>
+               Sign in
+            </Link>
+          </p>
+
+
+          {/* Sign Up Link */}
+          {/* <div className="text-center">
             <p className="text-gray-600">
               {isSignUp ? "Already have an account?" : "Don't have an account?"}
               <button
@@ -243,7 +252,7 @@ export default function AuthPage() {
                 {isSignUp ? "Sign in" : "Sign Up"}
               </button>
             </p>
-          </div>
+          </div> */}
 
           {/* Demo credentials */}
           {/* <div className="mt-6 rounded-lg bg-white/50 p-4">

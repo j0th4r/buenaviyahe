@@ -85,7 +85,7 @@ function PlansPageContent() {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Sign in required</h3>
             <p className="text-gray-500 mb-6">Please sign in to view and manage your travel plans</p>
             <Link
-              href="/auth"
+              href="/auth/login"
               className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 text-white rounded-full hover:bg-teal-600 transition-colors"
             >
               Sign In
