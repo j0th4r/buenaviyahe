@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import {useEffect, useState, useCallback} from 'react';
 import {useRouter, useSearchParams, notFound} from 'next/navigation';
+import {motion, AnimatePresence} from 'framer-motion';
 import {
   ArrowLeft,
   ChevronLeft,
@@ -13,6 +14,7 @@ import {
   Plane,
   BedDouble,
   ChevronRight as ChevronRightSmall,
+  ChevronDown,
 } from 'lucide-react';
 import {
   Sheet,
@@ -39,8 +41,6 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
   const [index, setIndex] = useState(0);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [overlayCollapsed, setOverlayCollapsed] = useState(false);
-  const [touchStart, setTouchStart] = useState<{y: number; time: number} | null>(null);
-  const [overlayOffset, setOverlayOffset] = useState(0);
   const [buttonInteractive, setButtonInteractive] = useState(true);
   const resolvedParams = React.use(params);
   const {data: spot, loading, error} = useSpot(resolvedParams.slug);
@@ -68,58 +68,24 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
     [spot?.images]
   );
 
-  // Touch handlers for swipe functionality
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    setTouchStart({
-      y: touch.clientY,
-      time: Date.now()
-    });
-    setOverlayOffset(0);
-  }, []);
+  // Remove touch handlers since we're not making it draggable
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!touchStart) return;
-    
-    const touch = e.touches[0];
-    const deltaY = touch.clientY - touchStart.y;
-    
-    // Only allow downward swipes (positive deltaY)
-    if (deltaY > 0) {
-      // Prevent default scrolling behavior
-      e.preventDefault();
-      setOverlayOffset(deltaY);
-    }
-  }, [touchStart]);
-
-  const handleTouchEnd = useCallback(() => {
-    if (!touchStart) return;
-    
-    const swipeThreshold = 100; // Minimum distance for a swipe
-    const velocityThreshold = 0.5; // Minimum velocity for a quick swipe
-    const timeDiff = Date.now() - touchStart.time;
-    const velocity = overlayOffset / timeDiff;
-    
-    // Determine if we should collapse or restore the overlay
-    if (overlayOffset > swipeThreshold || velocity > velocityThreshold) {
-      setOverlayCollapsed(true);
-    } else {
-      // If expanding from a swipe gesture, disable button interaction briefly
-      const wasCollapsed = overlayCollapsed;
+  // Handle clicking the handle indicator to toggle collapsed state
+  const handleHandleClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (overlayCollapsed) {
       setOverlayCollapsed(false);
-      if (wasCollapsed) {
-        setButtonInteractive(false);
-        setTimeout(() => {
-          setButtonInteractive(true);
-        }, 400);
-      }
+      // Disable button interaction briefly to prevent accidental clicks
+      setButtonInteractive(false);
+      setTimeout(() => {
+        setButtonInteractive(true);
+      }, 400); // Slightly longer than the 300ms animation
+    } else {
+      setOverlayCollapsed(true);
     }
-    
-    setTouchStart(null);
-    setOverlayOffset(0);
-  }, [touchStart, overlayOffset, overlayCollapsed]);
+  }, [overlayCollapsed]);
 
-  // Handle tap to restore overlay when collapsed
+  // Handle tap to restore overlay when collapsed (for the content area)
   const handleOverlayTap = useCallback(() => {
     if (overlayCollapsed) {
       setOverlayCollapsed(false);
@@ -202,25 +168,39 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
           </button>
         </div>
 
-        <div 
-          className="absolute inset-x-0 bottom-0 z-10 transition-all duration-300 ease-out"
-          style={{
-            transform: overlayOffset > 0 && !overlayCollapsed 
-              ? `translateY(${overlayOffset}px)` 
-              : undefined
+        <motion.div 
+          className="absolute inset-x-0 bottom-0 z-10"
+          initial={false}
+          animate={{
+            y: overlayCollapsed ? "calc(100% - 125px)" : 0
           }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
+          transition={{
+            type: "spring",
+            stiffness: overlayCollapsed ? 80 : 200,
+            damping: overlayCollapsed ? 8 : 25,
+            mass: 1.5,
+            duration: overlayCollapsed ? 0.8 : 0.4
+          }}
           onClick={handleOverlayTap}
         >
           {/* Always visible handle and minimal container */}
           <div className={`rounded-t-3xl bg-black/30 backdrop-blur-sm transition-all duration-300 ${
             overlayCollapsed ? 'p-3' : 'p-6'
           }`}>
-            {/* Swipe handle indicator */}
+            {/* Down button indicator */}
             <div className="mb-4 flex justify-center">
-              <div className="h-1 w-12 rounded-full bg-white/40" />
+              <button 
+                onClick={handleHandleClick}
+                className="flex items-center justify-center rounded-full p-2 hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+                aria-label={overlayCollapsed ? "Expand overlay" : "Collapse overlay"}
+              >
+                <motion.div
+                  animate={{ rotate: overlayCollapsed ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ChevronDown className="h-5 w-5 text-white/70" />
+                </motion.div>
+              </button>
             </div>
 
             {/* Collapsed state shows minimal content */}
@@ -293,7 +273,7 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
               </>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       <PlanDrawer open={openDrawer} onOpenChange={setOpenDrawer} spot={spot} />
