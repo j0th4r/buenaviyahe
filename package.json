@@ -6,12 +6,7 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start",
-    "migrate": "tsx scripts/migrate-to-supabase.ts",
-    "verify": "tsx scripts/verify-migration.ts",
-    "test:itineraries": "tsx scripts/test-itineraries.ts",
-    "test:itinerary-store": "tsx scripts/test-itinerary-store.ts",
-    "setup:demo": "tsx scripts/setup-demo-user.ts"
+    "start": "next start"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "1.2.2",
