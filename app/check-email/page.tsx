@@ -8,7 +8,7 @@ export default function CheckEmailPage() {
             We’ve sent a confirmation link to your email. <br />
             Please check your inbox and click the link to complete registration.
         </p>
-        <Link href={'/login'} className="mt-3 underline underline-offset-2">
+        <Link href={'/auth/login'} className="mt-3 underline underline-offset-2">
             Go back to login page
         </Link>
     </div>

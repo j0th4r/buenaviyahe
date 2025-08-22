@@ -37,22 +37,26 @@ function convertToSupabase(profile: Partial<UserProfile>): any {
   }
 }
 
-// Use the demo user ID that matches the one we'll create
-const DEMO_USER_ID = '00000000-0000-0000-0000-000000000000'
-
 export async function getProfile(): Promise<UserProfile> {
   try {
-    const supabaseProfile = await profilesApi.getById(DEMO_USER_ID)
+    const { supabase } = await import('@/lib/supabase/config')
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      throw new Error('User not authenticated')
+    }
+
+    const supabaseProfile = await profilesApi.getById(user.id)
     return convertFromSupabase(supabaseProfile)
   } catch (error) {
-    // If profile doesn't exist, return the default profile from db.json
+    // If profile doesn't exist, return a default profile structure
     if (error instanceof Error && error.message.includes('No rows found')) {
       return {
-        name: "Jowehl",
-        city: "Ambago, Agusan del Norte, Philippines",
-        website: "jotjot.com",
-        about: "I'm a traveler at heart who loves exploring new places, discovering hidden gems, and creating memorable adventures wherever I go.",
-        joinedYear: 2025,
+        name: "New User",
+        city: "",
+        website: "",
+        about: "",
+        joinedYear: new Date().getFullYear(),
         contributions: 0,
         avatarUrl: "/uploads/avatar_1755665481.jpg",
       }
@@ -65,21 +69,34 @@ export async function updateProfile(data: Partial<UserProfile>): Promise<UserPro
   const supabaseData = convertToSupabase(data)
   
   try {
-    const supabaseProfile = await profilesApi.update(DEMO_USER_ID, supabaseData)
+    const { supabase } = await import('@/lib/supabase/config')
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      throw new Error('User not authenticated')
+    }
+
+    const supabaseProfile = await profilesApi.update(user.id, supabaseData)
     return convertFromSupabase(supabaseProfile)
   } catch (error) {
     // If profile doesn't exist, create it
     if (error instanceof Error && error.message.includes('No rows found')) {
       const { supabase } = await import('@/lib/supabase/config')
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
       const { data: newProfile, error: createError } = await supabase
         .from('profiles')
         .insert({
-          id: DEMO_USER_ID,
-          name: data.name || 'Jowehl',
-          city: data.city || 'Ambago, Agusan del Norte, Philippines',
+          id: user.id,
+          name: data.name || 'New User',
+          city: data.city || '',
           website: data.website || null,
-          about: data.about || 'I\'m a traveler at heart who loves exploring new places, discovering hidden gems, and creating memorable adventures wherever I go.',
-          joined_year: data.joinedYear || 2025,
+          about: data.about || '',
+          joined_year: data.joinedYear || new Date().getFullYear(),
           contributions: data.contributions || 0,
           avatar_url: data.avatarUrl || null,
         })
@@ -94,9 +111,105 @@ export async function updateProfile(data: Partial<UserProfile>): Promise<UserPro
 }
 
 export async function uploadAvatar(file: File): Promise<string> {
-  // For now, return a placeholder URL
-  // You can implement Supabase Storage upload here later
-  return '/placeholder-user.jpg'
+  try {
+    const { supabase } = await import('@/lib/supabase/config')
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      throw new Error('User not authenticated')
+    }
+
+    // Create unique filename with user ID and timestamp
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${user.id}/${Date.now()}.${fileExt}`
+
+    // Upload file to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false // Don't overwrite existing files
+      })
+
+    if (error) {
+      throw error
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(fileName)
+
+    return publicUrl
+  } catch (error) {
+    console.error('Error uploading avatar:', error)
+    throw new Error('Failed to upload avatar')
+  }
+}
+
+export async function deleteAvatar(avatarUrl: string): Promise<void> {
+  try {
+    const { supabase } = await import('@/lib/supabase/config')
+    
+    // Extract filename from URL
+    const urlParts = avatarUrl.split('/')
+    const fileName = urlParts.slice(-2).join('/') // Get userId/filename.ext
+    
+    const { error } = await supabase.storage
+      .from('avatars')
+      .remove([fileName])
+
+    if (error) {
+      console.error('Error deleting avatar:', error)
+    }
+  } catch (error) {
+    console.error('Error deleting avatar:', error)
+  }
+}
+
+export async function updateProfileWithAvatar(
+  data: Partial<UserProfile>, 
+  avatarFile?: File
+): Promise<UserProfile> {
+  try {
+    let avatarUrl = data.avatarUrl
+
+    // Upload new avatar if provided
+    if (avatarFile) {
+      avatarUrl = await uploadAvatar(avatarFile)
+      
+      // Delete old avatar if it exists and is not a placeholder
+      if (data.avatarUrl && 
+          data.avatarUrl !== '/placeholder-user.jpg' && 
+          data.avatarUrl.includes('supabase')) {
+        await deleteAvatar(data.avatarUrl)
+      }
+    }
+
+    // Update profile with new avatar URL
+    return await updateProfile({
+      ...data,
+      avatarUrl
+    })
+  } catch (error) {
+    console.error('Error updating profile with avatar:', error)
+    throw error
+  }
+}
+
+export function validateAvatarFile(file: File): { valid: boolean; error?: string } {
+  // Check file size (limit to 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    return { valid: false, error: 'File size must be less than 5MB' }
+  }
+
+  // Check file type
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+  if (!allowedTypes.includes(file.type)) {
+    return { valid: false, error: 'Only JPEG, PNG, and WebP images are allowed' }
+  }
+
+  return { valid: true }
 }
 
 

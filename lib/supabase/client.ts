@@ -166,7 +166,13 @@ export const reviewsApi = {
   async getBySpotId(spotId: string) {
     const { data, error } = await supabase
       .from('reviews')
-      .select('*')
+      .select(`
+        *,
+        profiles (
+          name,
+          avatar_url
+        )
+      `)
       .eq('spot_id', spotId)
       .order('created_at', { ascending: false })
     
@@ -175,11 +181,47 @@ export const reviewsApi = {
   },
 
   async create(review: Inserts<'reviews'>) {
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('User not authenticated')
+
+    // Get user profile for denormalized fields
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name, avatar_url')
+      .eq('id', user.id)
+      .single()
+
+    const reviewData = {
+      ...review,
+      user_id: user.id,
+      user_name: profile?.name || 'Anonymous',
+      user_avatar: profile?.avatar_url || null
+    }
+
     const { data, error } = await supabase
       .from('reviews')
-      .insert(review)
+      .insert(reviewData)
       .select()
       .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  async getByUserId(userId: string) {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select(`
+        *,
+        spots (
+          title,
+          slug,
+          images
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
     
     if (error) throw error
     return data

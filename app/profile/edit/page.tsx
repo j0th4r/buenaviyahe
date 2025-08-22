@@ -2,9 +2,10 @@
 
 import Link from "next/link"
 import { ArrowLeft, Camera, Search } from "lucide-react"
-import { getProfile, updateProfile, uploadAvatar } from "@/lib/api/profile"
+import { getProfile, updateProfile, uploadAvatar, updateProfileWithAvatar } from "@/lib/api/profile"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "react-toastify"
 
 export default function EditProfilePage() {
   const router = useRouter()
@@ -16,6 +17,7 @@ export default function EditProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [avatarUrl, setAvatarUrl] = useState<string>("/placeholder-user.jpg")
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
 
   // Hydration guard to ensure we sync any changes made elsewhere
   useEffect(() => {
@@ -27,6 +29,28 @@ export default function EditProfilePage() {
       setAvatarUrl(fresh.avatarUrl || "/placeholder-user.jpg")
     }).catch(() => {})
   }, [])
+
+  const handleAvatarChange = async (file: File) => {
+    try {
+      setIsUploading(true)
+      
+      // Update profile with new avatar
+      const updatedProfile = await updateProfileWithAvatar({ name, city, website, about, avatarUrl }, file)
+      setName(updatedProfile.name)
+      setCity(updatedProfile.city)
+      setWebsite(updatedProfile.website || "")
+      setAbout(updatedProfile.about || "")
+      setAvatarUrl(updatedProfile.avatarUrl || "/placeholder-user.jpg")
+      
+      // Show success message
+      toast.success('Avatar updated successfully!')
+    } catch (error) {
+      toast.error('Failed to upload avatar')
+      console.error(error)
+    } finally {
+      setIsUploading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -54,7 +78,10 @@ export default function EditProfilePage() {
                 className="hidden"
                 onChange={(e) => {
                   const f = e.target.files?.[0] || null
-                  if (f) setAvatarFile(f)
+                  if (f) {
+                    setAvatarFile(f)
+                    handleAvatarChange(f)
+                  }
                 }}
               />
             </label>
@@ -118,20 +145,11 @@ export default function EditProfilePage() {
             disabled={saving || !name.trim() || !city.trim()}
             className="w-full rounded-lg bg-teal-500 py-3 font-semibold text-white shadow-md hover:bg-teal-600 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
             onClick={async () => {
+              setSaving(true)
               try {
-                setSaving(true)
                 setError(null)
-                let newAvatarUrl = avatarUrl
-                if (avatarFile) {
-                  try {
-                    newAvatarUrl = await uploadAvatar(avatarFile)
-                    setAvatarUrl(newAvatarUrl)
-                  } catch (e) {
-                    // If avatar upload fails, keep existing URL but show error; still attempt profile update
-                    setError("Avatar upload failed. Saving text changes only.")
-                  }
-                }
-                await updateProfile({ name, city, website, about, avatarUrl: newAvatarUrl })
+                // Just update the profile with current avatarUrl (already uploaded)
+                await updateProfile({ name, city, website, about, avatarUrl })
                 router.replace("/profile")
               } catch (e: any) {
                 setError(e?.message || "Failed to save profile. Please try again.")

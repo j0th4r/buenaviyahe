@@ -126,28 +126,31 @@ export interface Database {
       reviews: {
         Row: {
           id: string
-          spot_id: string
-          user_name: string
-          user_avatar: string
-          rating: number
+          spot_id: string | null
+          user_id: string | null 
+          user_name: string     
+          user_avatar: string | null 
+          rating: number | null
           comment: string
           created_at: string
         }
         Insert: {
           id?: string
-          spot_id: string
+          spot_id?: string | null
+          user_id?: string | null        
           user_name: string
-          user_avatar?: string
-          rating: number
+          user_avatar?: string | null
+          rating?: number | null
           comment: string
           created_at?: string
         }
         Update: {
           id?: string
-          spot_id?: string
+          spot_id?: string | null
+          user_id?: string | null        
           user_name?: string
-          user_avatar?: string
-          rating?: number
+          user_avatar?: string | null
+          rating?: number | null
           comment?: string
           created_at?: string
         }

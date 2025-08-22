@@ -38,6 +38,10 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
   // All hooks must be called at the top level, before any conditional logic
   const [index, setIndex] = useState(0);
   const [openDrawer, setOpenDrawer] = useState(false);
+  const [overlayCollapsed, setOverlayCollapsed] = useState(false);
+  const [touchStart, setTouchStart] = useState<{y: number; time: number} | null>(null);
+  const [overlayOffset, setOverlayOffset] = useState(0);
+  const [buttonInteractive, setButtonInteractive] = useState(true);
   const resolvedParams = React.use(params);
   const {data: spot, loading, error} = useSpot(resolvedParams.slug);
   const router = useRouter();
@@ -63,6 +67,69 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
     },
     [spot?.images]
   );
+
+  // Touch handlers for swipe functionality
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setTouchStart({
+      y: touch.clientY,
+      time: Date.now()
+    });
+    setOverlayOffset(0);
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!touchStart) return;
+    
+    const touch = e.touches[0];
+    const deltaY = touch.clientY - touchStart.y;
+    
+    // Only allow downward swipes (positive deltaY)
+    if (deltaY > 0) {
+      // Prevent default scrolling behavior
+      e.preventDefault();
+      setOverlayOffset(deltaY);
+    }
+  }, [touchStart]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!touchStart) return;
+    
+    const swipeThreshold = 100; // Minimum distance for a swipe
+    const velocityThreshold = 0.5; // Minimum velocity for a quick swipe
+    const timeDiff = Date.now() - touchStart.time;
+    const velocity = overlayOffset / timeDiff;
+    
+    // Determine if we should collapse or restore the overlay
+    if (overlayOffset > swipeThreshold || velocity > velocityThreshold) {
+      setOverlayCollapsed(true);
+    } else {
+      // If expanding from a swipe gesture, disable button interaction briefly
+      const wasCollapsed = overlayCollapsed;
+      setOverlayCollapsed(false);
+      if (wasCollapsed) {
+        setButtonInteractive(false);
+        setTimeout(() => {
+          setButtonInteractive(true);
+        }, 400);
+      }
+    }
+    
+    setTouchStart(null);
+    setOverlayOffset(0);
+  }, [touchStart, overlayOffset, overlayCollapsed]);
+
+  // Handle tap to restore overlay when collapsed
+  const handleOverlayTap = useCallback(() => {
+    if (overlayCollapsed) {
+      setOverlayCollapsed(false);
+      // Disable button interaction briefly to prevent accidental clicks
+      setButtonInteractive(false);
+      setTimeout(() => {
+        setButtonInteractive(true);
+      }, 400); // Slightly longer than the 300ms animation
+    }
+  }, [overlayCollapsed]);
 
   // useEffect must be called unconditionally
   useEffect(() => {
@@ -135,53 +202,97 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
           </button>
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 z-10 rounded-t-3xl bg-black/30 p-6 backdrop-blur-sm">
-          <div className="mb-6 flex justify-center">
-            <div className="flex space-x-2">
-              {spot.images.map((_, i) => (
+        <div 
+          className="absolute inset-x-0 bottom-0 z-10 transition-all duration-300 ease-out"
+          style={{
+            transform: overlayOffset > 0 && !overlayCollapsed 
+              ? `translateY(${overlayOffset}px)` 
+              : undefined
+          }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onClick={handleOverlayTap}
+        >
+          {/* Always visible handle and minimal container */}
+          <div className={`rounded-t-3xl bg-black/30 backdrop-blur-sm transition-all duration-300 ${
+            overlayCollapsed ? 'p-3' : 'p-6'
+          }`}>
+            {/* Swipe handle indicator */}
+            <div className="mb-4 flex justify-center">
+              <div className="h-1 w-12 rounded-full bg-white/40" />
+            </div>
+
+            {/* Collapsed state shows minimal content */}
+            {overlayCollapsed ? (
+              <div className="text-center">
+                <h1 className="text-lg font-bold truncate">{spot.title}</h1>
+                <p className="text-xs text-gray-300 mt-1">Tap to expand</p>
+              </div>
+            ) : (
+              <>
+                <div className="mb-6 flex justify-center">
+                  <div className="flex space-x-2">
+                    {spot.images.map((_, i) => (
+                      <button
+                        key={i}
+                        aria-label={`Go to image ${i + 1}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          goTo(i);
+                        }}
+                        className={`h-3 w-3 rounded-full transition ${
+                          i === index
+                            ? 'bg-teal-400'
+                            : 'bg-white/50 hover:bg-white/70'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <h1 className="mb-2 text-4xl font-extrabold tracking-tight">
+                  {spot.title}
+                </h1>
+                <p className="mb-4 text-sm leading-relaxed text-gray-200">
+                  {spot.description}
+                </p>
+
+                <div className="mb-6 flex items-center">
+                  <div className="flex text-yellow-400">
+                    {Array.from({length: fullStars}).map((_, i) => (
+                      <Star key={i} className="h-5 w-5 fill-yellow-400" />
+                    ))}
+                    {hasHalf && <StarHalf className="h-5 w-5 fill-yellow-400" />}
+                    {Array.from({length: emptyStars}).map((_, i) => (
+                      <Star key={`e-${i}`} className="h-5 w-5 opacity-30" />
+                    ))}
+                  </div>
+                  <span className="ml-2 text-sm">{spot.rating.toFixed(2)}</span>
+                  <span className="ml-2 text-sm text-gray-200">
+                    ({spot.reviews} reviews)
+                  </span>
+                </div>
+
                 <button
-                  key={i}
-                  aria-label={`Go to image ${i + 1}`}
-                  onClick={() => goTo(i)}
-                  className={`h-3 w-3 rounded-full transition ${
-                    i === index
-                      ? 'bg-teal-400'
-                      : 'bg-white/50 hover:bg-white/70'
+                  disabled={!buttonInteractive}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (buttonInteractive) {
+                      setOpenDrawer(true);
+                    }
+                  }}
+                  className={`w-full rounded-full px-6 py-4 text-lg font-bold text-white shadow-md transition-all ${
+                    buttonInteractive 
+                      ? 'bg-teal-400 hover:bg-teal-400/90 cursor-pointer' 
+                      : 'bg-teal-400/50 cursor-not-allowed'
                   }`}
-                />
-              ))}
-            </div>
+                >
+                  Add to Plan
+                </button>
+              </>
+            )}
           </div>
-
-          <h1 className="mb-2 text-4xl font-extrabold tracking-tight">
-            {spot.title}
-          </h1>
-          <p className="mb-4 text-sm leading-relaxed text-gray-200">
-            {spot.description}
-          </p>
-
-          <div className="mb-6 flex items-center">
-            <div className="flex text-yellow-400">
-              {Array.from({length: fullStars}).map((_, i) => (
-                <Star key={i} className="h-5 w-5 fill-yellow-400" />
-              ))}
-              {hasHalf && <StarHalf className="h-5 w-5 fill-yellow-400" />}
-              {Array.from({length: emptyStars}).map((_, i) => (
-                <Star key={`e-${i}`} className="h-5 w-5 opacity-30" />
-              ))}
-            </div>
-            <span className="ml-2 text-sm">{spot.rating.toFixed(2)}</span>
-            <span className="ml-2 text-sm text-gray-200">
-              ({spot.reviews} reviews)
-            </span>
-          </div>
-
-          <button
-            onClick={() => setOpenDrawer(true)}
-            className="w-full rounded-full bg-teal-400 px-6 py-4 text-lg font-bold text-white shadow-md hover:bg-teal-400/90"
-          >
-            Add to Plan
-          </button>
         </div>
       </div>
 

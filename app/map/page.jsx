@@ -12,6 +12,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 import { getSpots } from "@/lib/api"
+import { getImageUrl } from "@/lib/utils/image"
 
 const defaultCenter = { lat: 8.9731834, lng: 125.4085344 }
 
@@ -338,7 +339,7 @@ export default function MapPage() {
                     <img
                       alt={spot.title}
                       className="mb-4 h-40 w-full rounded-xl object-cover"
-                      src={spot.images?.[0] || "/placeholder.svg?height=160&width=256"}
+                      src={getImageUrl(spot.images?.[0] || "/placeholder.svg?height=160&width=256")}
                       crossOrigin="anonymous"
                     />
                     <h3 className="font-bold text-lg text-gray-800">

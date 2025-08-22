@@ -179,15 +179,6 @@ export default function AuthPage() {
               </button>
             </div>
 
-            {/* Forgot Password Link */}
-            <div className="text-right">
-              <Link 
-                href="/auth/forgot-password" 
-                className="text-sm text-gray-600 hover:text-gray-800"
-              >
-                Forgot Password?
-              </Link>
-            </div>
 
             {/* Sign In Button */}
             <button
@@ -230,9 +221,9 @@ export default function AuthPage() {
 
           {/* Sign Up Link */}
           <p className="text-gray-600 text-center">
-            Don't have an account?
+            Don't have an account?{' '}
             <Link href={'/auth/register'}>
-               Sign in
+               Sign Up
             </Link>
           </p>
 
