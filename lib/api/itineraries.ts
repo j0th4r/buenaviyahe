@@ -21,9 +21,9 @@ function convertFromSupabase(
 ): Itinerary {
   return {
     id: supabaseItinerary.id,
-    title: supabaseItinerary.title,
-    start: supabaseItinerary.start_date,
-    end: supabaseItinerary.end_date,
+    title: supabaseItinerary.title || undefined,
+    start: supabaseItinerary.start_date || undefined,
+    end: supabaseItinerary.end_date || undefined,
     days: supabaseItinerary.days as Record<number, any[]>,
   }
 }
