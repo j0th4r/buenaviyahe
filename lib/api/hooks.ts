@@ -107,7 +107,10 @@ export function useSpotsByCategory(
   )
 }
 
-export function useSearchSpots(params: SearchParams) {
+export function useSearchSpots(params: {
+  query: string
+  limit?: number
+}) {
   return useApiData(
     () => spotsApi.searchSpots(params),
     [JSON.stringify(params)]
