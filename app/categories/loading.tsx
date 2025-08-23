@@ -14,8 +14,11 @@ export default function CategoriesLoading() {
         {/* Categories Grid Skeleton */}
         <section className="mb-8">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {[1, 2].map(i => (
-              <div key={i} className="h-[240px] animate-pulse rounded-2xl bg-gray-200" />
+            {[1, 2].map((i) => (
+              <div
+                key={i}
+                className="h-[240px] animate-pulse rounded-2xl bg-gray-200"
+              />
             ))}
           </div>
         </section>

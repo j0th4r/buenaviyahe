@@ -1,10 +1,16 @@
-"use client"
+'use client'
 
-import { useEffect, useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
-import { getItinerary, type Itinerary, getNights, fallbackPricePerNight, confirmBooking } from "@/lib/itinerary-store"
-import { Star, StarHalf, ArrowLeft } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import {
+  getItinerary,
+  type Itinerary,
+  getNights,
+  fallbackPricePerNight,
+  confirmBooking,
+} from '@/lib/itinerary-store'
+import { Star, StarHalf, ArrowLeft } from 'lucide-react'
+import { useAuth } from '@/hooks/use-auth'
 
 type SpotView = {
   id: string
@@ -21,9 +27,14 @@ function Rating({ value = 4.5 }: { value?: number }) {
   return (
     <div className="flex items-center">
       {Array.from({ length: full }).map((_, i) => (
-        <Star key={`f-${i}`} className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+        <Star
+          key={`f-${i}`}
+          className="h-5 w-5 text-yellow-400 fill-yellow-400"
+        />
       ))}
-      {half && <StarHalf className="h-5 w-5 text-yellow-400 fill-yellow-400" />}
+      {half && (
+        <StarHalf className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+      )}
       {Array.from({ length: empty }).map((_, i) => (
         <Star key={`e-${i}`} className="h-5 w-5 text-gray-300" />
       ))}
@@ -45,31 +56,33 @@ export default function ConfirmPlanPage() {
 
   const spotsByDay = useMemo(() => {
     if (!itinerary?.days) return []
-    
-    return Object.entries(itinerary.days).map(([dayKey, daySpots]) => ({
-      day: `Day ${dayKey}`,
-      spots: daySpots.map((s) => ({
-        id: s.id,
-        title: s.title,
-        image: s.image,
-        rating: s.rating,
-        pricePerNight: s.pricePerNight,
-      }))
-    }))
+
+    return Object.entries(itinerary.days).map(
+      ([dayKey, daySpots]) => ({
+        day: `Day ${dayKey}`,
+        spots: daySpots.map((s) => ({
+          id: s.id,
+          title: s.title,
+          image: s.image,
+          rating: s.rating,
+          pricePerNight: s.pricePerNight,
+        })),
+      })
+    )
   }, [itinerary])
 
   // Flatten spots for costs calculation (with unique tracking)
   const uniqueSpots: SpotView[] = useMemo(() => {
     const uniqueMap = new Map<string, SpotView>()
-    
+
     spotsByDay.forEach(({ spots }) => {
-      spots.forEach(spot => {
+      spots.forEach((spot) => {
         if (!uniqueMap.has(spot.id)) {
           uniqueMap.set(spot.id, spot)
         }
       })
     })
-    
+
     return Array.from(uniqueMap.values())
   }, [spotsByDay])
 
@@ -92,12 +105,12 @@ export default function ConfirmPlanPage() {
 
   const handleConfirmBooking = async () => {
     if (!itinerary) return
-    
+
     setIsConfirming(true)
     try {
       // Save the itinerary to Supabase and clear localStorage
       await confirmBooking()
-      router.push("/planner/success")
+      router.push('/planner/success')
     } catch (error) {
       console.error('Failed to confirm booking:', error)
       // Show error message to user
@@ -120,15 +133,24 @@ export default function ConfirmPlanPage() {
     return (
       <div className="mx-auto max-w-md px-4 py-8">
         <header className="mb-6 flex items-center justify-between">
-          <button aria-label="Go back" onClick={() => router.back()} className="rounded-full p-1 hover:bg-gray-100">
+          <button
+            aria-label="Go back"
+            onClick={() => router.back()}
+            className="rounded-full p-1 hover:bg-gray-100"
+          >
             <ArrowLeft className="h-6 w-6" />
           </button>
-          <h1 className="text-xl font-bold text-gray-800">Confirm Plan</h1>
+          <h1 className="text-xl font-bold text-gray-800">
+            Confirm Plan
+          </h1>
           <div className="w-6" />
         </header>
         <div className="rounded-xl border border-dashed p-8 text-center text-gray-500">
           No itinerary found. Create a plan first.
-          <a href="/" className="mt-4 block font-semibold text-teal-600 underline">
+          <a
+            href="/"
+            className="mt-4 block font-semibold text-teal-600 underline"
+          >
             Explore spots
           </a>
         </div>
@@ -147,7 +169,9 @@ export default function ConfirmPlanPage() {
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
-          <h1 className="text-xl font-bold text-gray-800">Confirm Plan</h1>
+          <h1 className="text-xl font-bold text-gray-800">
+            Confirm Plan
+          </h1>
           <div className="w-6" />
         </header>
 
@@ -155,9 +179,11 @@ export default function ConfirmPlanPage() {
           {/* Travel Plan */}
           <section className="mb-8">
             <div className="mb-1 flex items-baseline justify-between">
-              <h2 className="text-lg font-semibold text-gray-700">Travel Plan</h2>
+              <h2 className="text-lg font-semibold text-gray-700">
+                Travel Plan
+              </h2>
               <span className="text-sm text-gray-500">
-                {nights} night{nights === 1 ? "" : "s"}
+                {nights} night{nights === 1 ? '' : 's'}
               </span>
             </div>
             <div className="space-y-6">
@@ -169,15 +195,23 @@ export default function ConfirmPlanPage() {
                     </h3>
                     <div className="space-y-4">
                       {spots.map((s, index) => (
-                        <article key={`${day}-${s.id}-${index}`} className="relative h-32 overflow-hidden rounded-lg">
+                        <article
+                          key={`${day}-${s.id}-${index}`}
+                          className="relative h-32 overflow-hidden rounded-lg"
+                        >
                           <img
-                            src={s.image || "/placeholder.svg?height=128&width=512&query=travel%20destination"}
+                            src={
+                              s.image ||
+                              '/placeholder.svg?height=128&width=512&query=travel%20destination'
+                            }
                             alt={`${s.title} photo`}
                             className="h-full w-full object-cover"
                             crossOrigin="anonymous"
                           />
                           <div className="absolute inset-0 flex flex-col justify-end bg-black/35 p-4">
-                            <h4 className="text-lg font-bold text-white">{s.title}</h4>
+                            <h4 className="text-lg font-bold text-white">
+                              {s.title}
+                            </h4>
                             <div className="mt-1">
                               <Rating value={s.rating ?? 4.5} />
                             </div>
@@ -188,43 +222,67 @@ export default function ConfirmPlanPage() {
                   </div>
                 ))
               ) : (
-                <div className="rounded-lg border border-dashed p-6 text-center text-gray-500">No spots added yet.</div>
+                <div className="rounded-lg border border-dashed p-6 text-center text-gray-500">
+                  No spots added yet.
+                </div>
               )}
             </div>
           </section>
 
           {/* Travel Costs */}
           <section>
-            <h2 className="mb-4 text-lg font-semibold text-gray-700">Travel Costs</h2>
+            <h2 className="mb-4 text-lg font-semibold text-gray-700">
+              Travel Costs
+            </h2>
             <div className="space-y-3 text-gray-700">
               {costs.items.map((row, idx) => (
-                <div key={`${row.title}-${idx}`} className="flex items-center justify-between text-sm">
+                <div
+                  key={`${row.title}-${idx}`}
+                  className="flex items-center justify-between text-sm"
+                >
                   <span className="truncate">{row.title}</span>
-                  <span className="mx-2 flex-grow border-b border-dotted border-gray-300" aria-hidden="true" />
-                  <span className="font-medium text-teal-600">{`₱${row.amount.toLocaleString("en-PH")}`}</span>
+                  <span
+                    className="mx-2 flex-grow border-b border-dotted border-gray-300"
+                    aria-hidden="true"
+                  />
+                  <span className="font-medium text-teal-600">{`₱${row.amount.toLocaleString('en-PH')}`}</span>
                 </div>
               ))}
 
               <div className="mt-2 flex items-center justify-between text-sm">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="mx-2 flex-grow border-b border-dotted border-gray-300" aria-hidden="true" />
-                <span className="text-gray-900">{`₱${costs.subtotal.toLocaleString("en-PH")}`}</span>
+                <span
+                  className="mx-2 flex-grow border-b border-dotted border-gray-300"
+                  aria-hidden="true"
+                />
+                <span className="text-gray-900">{`₱${costs.subtotal.toLocaleString('en-PH')}`}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">Taxes (10%)</span>
-                <span className="mx-2 flex-grow border-b border-dotted border-gray-300" aria-hidden="true" />
-                <span className="text-gray-900">{`₱${costs.taxes.toLocaleString("en-PH")}`}</span>
+                <span
+                  className="mx-2 flex-grow border-b border-dotted border-gray-300"
+                  aria-hidden="true"
+                />
+                <span className="text-gray-900">{`₱${costs.taxes.toLocaleString('en-PH')}`}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Service Fee (5%)</span>
-                <span className="mx-2 flex-grow border-b border-dotted border-gray-300" aria-hidden="true" />
-                <span className="text-gray-900">{`₱${costs.fees.toLocaleString("en-PH")}`}</span>
+                <span className="text-gray-600">
+                  Service Fee (5%)
+                </span>
+                <span
+                  className="mx-2 flex-grow border-b border-dotted border-gray-300"
+                  aria-hidden="true"
+                />
+                <span className="text-gray-900">{`₱${costs.fees.toLocaleString('en-PH')}`}</span>
               </div>
 
               <div className="flex items-center justify-between pt-2">
                 <span className="font-bold">Total</span>
-                <span className="mx-2 flex-grow border-b border-dotted border-gray-300" aria-hidden="true" />
-                <span className="font-bold text-teal-600">{`₱${costs.total.toLocaleString("en-PH")}`}</span>
+                <span
+                  className="mx-2 flex-grow border-b border-dotted border-gray-300"
+                  aria-hidden="true"
+                />
+                <span className="font-bold text-teal-600">{`₱${costs.total.toLocaleString('en-PH')}`}</span>
               </div>
             </div>
           </section>

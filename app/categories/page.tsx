@@ -1,10 +1,10 @@
-"use client"
+'use client'
 
 import Link from 'next/link'
 import { ArrowLeft, MapPin } from 'lucide-react'
-import { useCategories } from "@/lib/api"
-import { getImageUrl } from "@/lib/utils/image"
-import type { Category as DbCategory } from "@/lib/api/categories"
+import { useCategories } from '@/lib/api'
+import { getImageUrl } from '@/lib/utils/image'
+import type { Category as DbCategory } from '@/lib/api/categories'
 
 export default function CategoriesPage() {
   const { data: categories, loading, error } = useCategories()
@@ -35,13 +35,18 @@ export default function CategoriesPage() {
         <section className="mb-8">
           {loading ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {[1, 2].map(i => (
-                <div key={i} className="h-[240px] animate-pulse rounded-2xl bg-gray-200" />
+              {[1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="h-[240px] animate-pulse rounded-2xl bg-gray-200"
+                />
               ))}
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-lg mb-2">Unable to load categories</p>
+              <p className="text-gray-500 text-lg mb-2">
+                Unable to load categories
+              </p>
               <p className="text-gray-400">Please try again later</p>
             </div>
           ) : (
@@ -64,8 +69,9 @@ export default function CategoriesPage() {
                 Discover Buenavista
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Each category offers unique experiences in Buenavista, Agusan Del Norte. 
-                From pristine beaches to adventure parks, find your perfect getaway.
+                Each category offers unique experiences in Buenavista,
+                Agusan Del Norte. From pristine beaches to adventure
+                parks, find your perfect getaway.
               </p>
             </div>
           </div>
@@ -81,19 +87,22 @@ interface CategoryCardProps {
 
 function CategoryCard({ category }: CategoryCardProps) {
   return (
-    <Link 
+    <Link
       href={`/categories/${category.id}`}
       className="group relative overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 transition-all hover:shadow-lg hover:ring-teal-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
     >
       <div className="aspect-[4/3] overflow-hidden">
         <img
-          src={getImageUrl(category.image) || "/placeholder.svg?height=240&width=320"}
+          src={
+            getImageUrl(category.image) ||
+            '/placeholder.svg?height=240&width=320'
+          }
           alt={category.name}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
         />
       </div>
-      
+
       <div className="p-4">
         <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-teal-600 transition-colors">
           {category.name}

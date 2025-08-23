@@ -1,13 +1,18 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Home, Calendar, SquarePlus, Map, SquareUser } from "lucide-react"
-import { cn } from "@/lib/utils"
- 
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import {
+  Home,
+  Calendar,
+  SquarePlus,
+  Map,
+  SquareUser,
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 type TabItem = {
-  key: "home" | "plans" | "create" | "map" | "profile"
+  key: 'home' | 'plans' | 'create' | 'map' | 'profile'
   label: string
   href: string
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
@@ -17,15 +22,25 @@ export function BottomTabs() {
   const pathname = usePathname()
 
   const items: TabItem[] = [
-    { key: "home", label: "Home", icon: Home, href: "/" },
-    { key: "plans", label: "Plans", icon: Calendar, href: "/plans" },
-    { key: "create", label: "Create", icon: SquarePlus, href: "/planner/new" },
-    { key: "map", label: "Map", icon: Map, href: "/map" },
-    { key: "profile", label: "Profile", icon: SquareUser, href: "/profile" },
+    { key: 'home', label: 'Home', icon: Home, href: '/' },
+    { key: 'plans', label: 'Plans', icon: Calendar, href: '/plans' },
+    {
+      key: 'create',
+      label: 'Create',
+      icon: SquarePlus,
+      href: '/planner/new',
+    },
+    { key: 'map', label: 'Map', icon: Map, href: '/map' },
+    {
+      key: 'profile',
+      label: 'Profile',
+      icon: SquareUser,
+      href: '/profile',
+    },
   ]
 
-  const isActive = (key: TabItem["key"], href: string) => {
-    if (key === "home") return pathname === "/"
+  const isActive = (key: TabItem['key'], href: string) => {
+    if (key === 'home') return pathname === '/'
     return pathname.startsWith(href)
   }
 
@@ -35,7 +50,7 @@ export function BottomTabs() {
         {items.map(({ key, label, icon: Icon, href }) => {
           const active = isActive(key, href)
 
-          if (key === "create") {
+          if (key === 'create') {
             return (
               <Link
                 key={key}
@@ -43,7 +58,9 @@ export function BottomTabs() {
                 className="flex flex-col items-center justify-center text-[13px] bg-teal-600 w-[4rem] rounded-lg"
               >
                 <Icon className="h-6 w-6 text-white" />
-                <span className="leading-none text-white pt-1">{label}</span>
+                <span className="leading-none text-white pt-1">
+                  {label}
+                </span>
               </Link>
             )
           }
@@ -52,12 +69,17 @@ export function BottomTabs() {
               key={key}
               href={href}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 py-1 text-[13px]",
-                active ? "text-teal-600" : "text-gray-900"
+                'flex flex-col items-center justify-center gap-1 py-1 text-[13px]',
+                active ? 'text-teal-600' : 'text-gray-900'
               )}
-              aria-current={active ? "page" : undefined}
+              aria-current={active ? 'page' : undefined}
             >
-              <Icon className={cn("h-6 w-6", active ? "text-teal-600" : "text-gray-900")} />
+              <Icon
+                className={cn(
+                  'h-6 w-6',
+                  active ? 'text-teal-600' : 'text-gray-900'
+                )}
+              />
               <span className="leading-none">{label}</span>
             </Link>
           )
@@ -66,5 +88,3 @@ export function BottomTabs() {
     </nav>
   )
 }
-
-

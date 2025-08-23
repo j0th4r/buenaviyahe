@@ -1,11 +1,11 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { supabase } from "@/lib/supabase/config"
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase/config'
 
 export function ConnectionTest() {
-  const [status, setStatus] = useState("Testing...")
-  const [error, setError] = useState("")
+  const [status, setStatus] = useState('Testing...')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     async function testConnection() {
@@ -18,13 +18,13 @@ export function ConnectionTest() {
 
         if (error) {
           setError(`Database error: ${error.message}`)
-          setStatus("Failed")
+          setStatus('Failed')
         } else {
-          setStatus("Connected")
+          setStatus('Connected')
         }
       } catch (err) {
         setError(`Connection error: ${err}`)
-        setStatus("Failed")
+        setStatus('Failed')
       }
     }
 

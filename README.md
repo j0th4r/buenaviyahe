@@ -113,7 +113,6 @@ buenaviyahe/
    ```
 
 4. **Set up Supabase Database**
-
    - Create a new Supabase project
    - Run the database migrations (see Database Schema section)
    - Configure Row Level Security policies

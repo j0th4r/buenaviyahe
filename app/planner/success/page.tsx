@@ -1,9 +1,19 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import { useEffect, useState } from "react"
-import { CheckCircle2, Share2, ArrowRight, Calendar, MapPin } from "lucide-react"
-import { getItinerary, type Itinerary, getNights } from "@/lib/itinerary-store"
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import {
+  CheckCircle2,
+  Share2,
+  ArrowRight,
+  Calendar,
+  MapPin,
+} from 'lucide-react'
+import {
+  getItinerary,
+  type Itinerary,
+  getNights,
+} from '@/lib/itinerary-store'
 
 export default function SuccessPage() {
   const [itinerary, setItinerary] = useState<Itinerary | null>(null)
@@ -11,18 +21,20 @@ export default function SuccessPage() {
     const currentItinerary = getItinerary()
     setItinerary(currentItinerary)
   }, [])
-  
+
   const nights = getNights(itinerary)
-  const title = itinerary?.title || "Your trip"
+  const title = itinerary?.title || 'Your trip'
 
   return (
     <div className="bg-white">
       <div className="mx-auto min-h-[100dvh] max-w-md px-4 py-10">
         <div className="flex flex-col items-center text-center">
           <CheckCircle2 className="h-16 w-16 text-teal-500" />
-          <h1 className="mt-4 text-2xl font-bold">Booking Confirmed</h1>
+          <h1 className="mt-4 text-2xl font-bold">
+            Booking Confirmed
+          </h1>
           <p className="mt-2 text-gray-600">
-            {title} • {nights} night{nights === 1 ? "" : "s"}
+            {title} • {nights} night{nights === 1 ? '' : 's'}
           </p>
         </div>
 

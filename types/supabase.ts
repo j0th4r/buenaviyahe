@@ -127,9 +127,9 @@ export interface Database {
         Row: {
           id: string
           spot_id: string | null
-          user_id: string | null 
-          user_name: string     
-          user_avatar: string | null 
+          user_id: string | null
+          user_name: string
+          user_avatar: string | null
           rating: number | null
           comment: string
           created_at: string
@@ -137,7 +137,7 @@ export interface Database {
         Insert: {
           id?: string
           spot_id?: string | null
-          user_id?: string | null        
+          user_id?: string | null
           user_name: string
           user_avatar?: string | null
           rating?: number | null
@@ -147,7 +147,7 @@ export interface Database {
         Update: {
           id?: string
           spot_id?: string | null
-          user_id?: string | null        
+          user_id?: string | null
           user_name?: string
           user_avatar?: string | null
           rating?: number | null

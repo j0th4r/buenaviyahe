@@ -1,18 +1,31 @@
-"use client"
+'use client'
 
-import React, { useEffect, useMemo, useRef, useState, useCallback } from "react"
-import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow, useMap } from "@vis.gl/react-google-maps"
-import { Star, StarHalf, Crosshair } from "lucide-react"
-import { BottomTabs } from "@/components/ui/bottom-tabs"
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from 'react'
+import {
+  APIProvider,
+  Map,
+  AdvancedMarker,
+  Pin,
+  InfoWindow,
+  useMap,
+} from '@vis.gl/react-google-maps'
+import { Star, StarHalf, Crosshair } from 'lucide-react'
+import { BottomTabs } from '@/components/ui/bottom-tabs'
 import {
   Drawer,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer"
-import { getSpots } from "@/lib/api"
-import { getImageUrl } from "@/lib/utils/image"
+} from '@/components/ui/drawer'
+import { getSpots } from '@/lib/api'
+import { getImageUrl } from '@/lib/utils/image'
 
 const defaultCenter = { lat: 8.9731834, lng: 125.4085344 }
 
@@ -32,7 +45,7 @@ export default function MapPage() {
   const [center, setCenter] = useState(defaultCenter)
   const [zoom, setZoom] = useState(12)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const [mapTypeId, setMapTypeId] = useState("satellite")
+  const [mapTypeId, setMapTypeId] = useState('satellite')
   const [locationLoading, setLocationLoading] = useState(true)
   const [userLocation, setUserLocation] = useState(null)
   const mapRef = useRef(null)
@@ -40,10 +53,10 @@ export default function MapPage() {
   // Get user's current location
   useEffect(() => {
     let cancelled = false
-    
+
     const getUserLocation = () => {
       if (!navigator.geolocation) {
-        console.log("Geolocation not supported")
+        console.log('Geolocation not supported')
         setLocationLoading(false)
         return
       }
@@ -53,17 +66,17 @@ export default function MapPage() {
           if (!cancelled) {
             const location = {
               lat: position.coords.latitude,
-              lng: position.coords.longitude
+              lng: position.coords.longitude,
             }
             setCenter(location)
             setUserLocation(location)
             setLocationLoading(false)
-            console.log("User location found:", location)
+            console.log('User location found:', location)
           }
         },
         (error) => {
           if (!cancelled) {
-            console.log("Geolocation error:", error.message)
+            console.log('Geolocation error:', error.message)
             setLocationLoading(false)
             // Keep default center if location access is denied
           }
@@ -71,13 +84,13 @@ export default function MapPage() {
         {
           enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: 300000 // 5 minutes
+          maximumAge: 300000, // 5 minutes
         }
       )
     }
 
     getUserLocation()
-    
+
     return () => {
       cancelled = true
     }
@@ -90,10 +103,13 @@ export default function MapPage() {
       try {
         setLoading(true)
         const all = await getSpots()
-        const withCoords = (all || []).filter(s => typeof s.lat === "number" && typeof s.lng === "number")
+        const withCoords = (all || []).filter(
+          (s) =>
+            typeof s.lat === 'number' && typeof s.lng === 'number'
+        )
         if (!cancelled) setSpots(withCoords)
       } catch (e) {
-        if (!cancelled) setError("Failed to load spots")
+        if (!cancelled) setError('Failed to load spots')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -151,7 +167,9 @@ export default function MapPage() {
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
         <span className="ml-3 text-lg text-gray-600">
-          {locationLoading ? "Getting your location..." : "Loading map..."}
+          {locationLoading
+            ? 'Getting your location...'
+            : 'Loading map...'}
         </span>
       </div>
     )
@@ -161,7 +179,9 @@ export default function MapPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <div className="text-center">
-          <h3 className="mb-2 text-lg font-semibold text-gray-900">{error}</h3>
+          <h3 className="mb-2 text-lg font-semibold text-gray-900">
+            {error}
+          </h3>
           <p className="text-gray-600">Please try again later.</p>
         </div>
       </div>
@@ -169,13 +189,16 @@ export default function MapPage() {
   }
 
   return (
-    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""} libraries={["marker"]}>
+    <APIProvider
+      apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}
+      libraries={['marker']}
+    >
       <div className="relative h-screen w-full bg-gray-100">
         <Map
           center={center}
           zoom={zoom}
-          onCenterChanged={e => setCenter(e.detail.center)}
-          onZoomChanged={e => setZoom(e.detail.zoom)}
+          onCenterChanged={(e) => setCenter(e.detail.center)}
+          onZoomChanged={(e) => setZoom(e.detail.zoom)}
           mapId="6663354a9d71030a54d32b1a"
           gestureHandling="greedy"
           disableDefaultUI={true}
@@ -184,59 +207,59 @@ export default function MapPage() {
           options={{
             styles: [
               {
-                featureType: "poi",
-                stylers: [{ visibility: "off" }]
+                featureType: 'poi',
+                stylers: [{ visibility: 'off' }],
               },
               {
-                featureType: "poi.business",
-                stylers: [{ visibility: "off" }]
+                featureType: 'poi.business',
+                stylers: [{ visibility: 'off' }],
               },
               {
-                featureType: "poi.park",
-                stylers: [{ visibility: "off" }]
+                featureType: 'poi.park',
+                stylers: [{ visibility: 'off' }],
               },
               {
-                featureType: "poi.attraction",
-                stylers: [{ visibility: "off" }]
+                featureType: 'poi.attraction',
+                stylers: [{ visibility: 'off' }],
               },
               {
-                featureType: "poi.government",
-                stylers: [{ visibility: "off" }]
+                featureType: 'poi.government',
+                stylers: [{ visibility: 'off' }],
               },
               {
-                featureType: "poi.medical",
-                stylers: [{ visibility: "off" }]
+                featureType: 'poi.medical',
+                stylers: [{ visibility: 'off' }],
               },
               {
-                featureType: "poi.place_of_worship",
-                stylers: [{ visibility: "off" }]
+                featureType: 'poi.place_of_worship',
+                stylers: [{ visibility: 'off' }],
               },
               {
-                featureType: "poi.school",
-                stylers: [{ visibility: "off" }]
+                featureType: 'poi.school',
+                stylers: [{ visibility: 'off' }],
               },
               {
-                featureType: "poi.sports_complex",
-                stylers: [{ visibility: "off" }]
+                featureType: 'poi.sports_complex',
+                stylers: [{ visibility: 'off' }],
               },
               {
-                featureType: "transit",
-                stylers: [{ visibility: "off" }]
+                featureType: 'transit',
+                stylers: [{ visibility: 'off' }],
               },
               {
-                featureType: "transit.station",
-                stylers: [{ visibility: "off" }]
-              }
+                featureType: 'transit.station',
+                stylers: [{ visibility: 'off' }],
+              },
             ],
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: false,
             zoomControl: false,
-            clickableIcons: false
+            clickableIcons: false,
           }}
         >
-          <MapReady onReady={m => (mapRef.current = m)} />
-          
+          <MapReady onReady={(m) => (mapRef.current = m)} />
+
           {/* User location marker */}
           {userLocation && (
             <AdvancedMarker
@@ -248,7 +271,7 @@ export default function MapPage() {
               </div>
             </AdvancedMarker>
           )}
-          
+
           {/* Travel spots markers */}
           {spots.map((spot, idx) => (
             <AdvancedMarker
@@ -256,8 +279,11 @@ export default function MapPage() {
               position={{ lat: spot.lat, lng: spot.lng }}
               onClick={() => setSelected(spot)}
             >
-              <Pin background="#FFD700" borderColor="#B8860B" glyphColor="#B8860B">
-              </Pin>
+              <Pin
+                background="#FFD700"
+                borderColor="#B8860B"
+                glyphColor="#B8860B"
+              ></Pin>
             </AdvancedMarker>
           ))}
 
@@ -265,10 +291,16 @@ export default function MapPage() {
             <InfoWindow
               position={{ lat: selected.lat, lng: selected.lng }}
               onCloseClick={() => setSelected(null)}
-              headerContent={<h4 className="font-bold text-[#B8860B]">{selected.title}</h4>}
+              headerContent={
+                <h4 className="font-bold text-[#B8860B]">
+                  {selected.title}
+                </h4>
+              }
             >
               <div className="text-sm">
-                <p className="mb-2 text-gray-700">{selected.location}</p>
+                <p className="mb-2 text-gray-700">
+                  {selected.location}
+                </p>
                 <a
                   className="text-teal-600 hover:text-teal-700 font-medium"
                   href={`/spots/${selected.slug}`}
@@ -284,21 +316,21 @@ export default function MapPage() {
         <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
           <div className="flex rounded-full bg-white p-1 shadow-md">
             <button
-              onClick={() => setMapTypeId("roadmap")}
+              onClick={() => setMapTypeId('roadmap')}
               className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                mapTypeId === "roadmap"
-                  ? "bg-teal-500 text-white"
-                  : "bg-transparent text-gray-800 hover:bg-gray-100"
+                mapTypeId === 'roadmap'
+                  ? 'bg-teal-500 text-white'
+                  : 'bg-transparent text-gray-800 hover:bg-gray-100'
               }`}
             >
               Road
             </button>
             <button
-              onClick={() => setMapTypeId("satellite")}
+              onClick={() => setMapTypeId('satellite')}
               className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                mapTypeId === "satellite"
-                  ? "bg-teal-500 text-white"
-                  : "bg-transparent text-gray-800 hover:bg-gray-100"
+                mapTypeId === 'satellite'
+                  ? 'bg-teal-500 text-white'
+                  : 'bg-transparent text-gray-800 hover:bg-gray-100'
               }`}
             >
               Satellite
@@ -339,19 +371,24 @@ export default function MapPage() {
                     <img
                       alt={spot.title}
                       className="mb-4 h-40 w-full rounded-xl object-cover"
-                      src={getImageUrl(spot.images?.[0] || "/placeholder.svg?height=160&width=256")}
+                      src={getImageUrl(
+                        spot.images?.[0] ||
+                          '/placeholder.svg?height=160&width=256'
+                      )}
                       crossOrigin="anonymous"
                     />
                     <h3 className="font-bold text-lg text-gray-800">
                       {spot.title}
                     </h3>
-                    <p className="text-sm text-gray-600 mb-2">{spot.location}</p>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {spot.location}
+                    </p>
                     <Rating value={spot.rating || 4.5} />
                     <div className="mt-4 flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-500">from</p>
                         <p className="font-semibold text-gray-800">
-                          {spot.pricing?.oneNight || "₱100 / night"}
+                          {spot.pricing?.oneNight || '₱100 / night'}
                         </p>
                       </div>
                     </div>
@@ -378,5 +415,3 @@ export default function MapPage() {
     </APIProvider>
   )
 }
-
-

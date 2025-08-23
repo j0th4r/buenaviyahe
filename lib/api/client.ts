@@ -1,6 +1,6 @@
 /**
  * API Client
- * 
+ *
  * Low-level API client with error handling, retries, and request/response interceptors.
  */
 
@@ -28,12 +28,18 @@ export interface RequestOptions extends RequestInit {
 }
 
 // Utility function to create delays for retries
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+const delay = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms))
 
 // Utility function to build URL with query parameters
-export function buildUrl(endpoint: string, params?: Record<string, any>): string {
-  const url = new URL(endpoint.startsWith('http') ? endpoint : endpoint)
-  
+export function buildUrl(
+  endpoint: string,
+  params?: Record<string, any>
+): string {
+  const url = new URL(
+    endpoint.startsWith('http') ? endpoint : endpoint
+  )
+
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
@@ -41,7 +47,7 @@ export function buildUrl(endpoint: string, params?: Record<string, any>): string
       }
     })
   }
-  
+
   return url.toString()
 }
 
@@ -67,14 +73,18 @@ class ApiClient {
       ...fetchOptions
     } = options
 
-    const url = endpoint.startsWith('http') ? endpoint : `${this.baseUrl}${endpoint}`
+    const url = endpoint.startsWith('http')
+      ? endpoint
+      : `${this.baseUrl}${endpoint}`
 
     // Determine if we're sending multipart form data
-    const isFormData = typeof FormData !== 'undefined' && (fetchOptions.body as any) instanceof FormData
+    const isFormData =
+      typeof FormData !== 'undefined' &&
+      (fetchOptions.body as any) instanceof FormData
 
     // Set default headers
     const headers: Record<string, string> = {
-      'Accept': 'application/json',
+      Accept: 'application/json',
       ...(fetchOptions.headers as Record<string, string> | undefined),
     }
     // Only set JSON content type when NOT sending FormData
@@ -89,7 +99,10 @@ class ApiClient {
       try {
         // Create AbortController for timeout
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), timeout)
+        const timeoutId = setTimeout(
+          () => controller.abort(),
+          timeout
+        )
 
         const response = await fetch(url, {
           ...fetchOptions,
@@ -112,7 +125,8 @@ class ApiClient {
 
         // Handle HTTP errors
         if (!response.ok) {
-          const errorMessage = data.message || data.error || `HTTP ${response.status}`
+          const errorMessage =
+            data.message || data.error || `HTTP ${response.status}`
           throw new ApiClientError(
             errorMessage,
             response.status,
@@ -126,8 +140,9 @@ class ApiClient {
 
         // Don't retry on certain errors
         if (
-          error instanceof ApiClientError && 
-          (error.status >= 400 && error.status < 500)
+          error instanceof ApiClientError &&
+          error.status >= 400 &&
+          error.status < 500
         ) {
           throw error
         }
@@ -149,7 +164,10 @@ class ApiClient {
   /**
    * GET request
    */
-  async get<T = any>(endpoint: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
+  async get<T = any>(
+    endpoint: string,
+    params?: Record<string, any>
+  ): Promise<ApiResponse<T>> {
     const url = buildUrl(endpoint, params)
     return this.request<T>(url, { method: 'GET' })
   }
@@ -157,19 +175,32 @@ class ApiClient {
   /**
    * POST request
    */
-  async post<T = any>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
-    const isFormData = typeof FormData !== 'undefined' && data instanceof FormData
+  async post<T = any>(
+    endpoint: string,
+    data?: any
+  ): Promise<ApiResponse<T>> {
+    const isFormData =
+      typeof FormData !== 'undefined' && data instanceof FormData
     return this.request<T>(endpoint, {
       method: 'POST',
-      headers: isFormData ? { Accept: 'application/json' } : undefined,
-      body: isFormData ? data : data ? JSON.stringify(data) : undefined,
+      headers: isFormData
+        ? { Accept: 'application/json' }
+        : undefined,
+      body: isFormData
+        ? data
+        : data
+          ? JSON.stringify(data)
+          : undefined,
     })
   }
 
   /**
    * PUT request
    */
-  async put<T = any>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
+  async put<T = any>(
+    endpoint: string,
+    data?: any
+  ): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,

@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft } from 'lucide-react'
 
 export default function Loading() {
   return (
@@ -7,7 +7,9 @@ export default function Loading() {
         <div className="rounded-full p-1">
           <ArrowLeft className="h-6 w-6 text-gray-300" />
         </div>
-        <h1 className="text-xl font-bold text-gray-300">Plan Details</h1>
+        <h1 className="text-xl font-bold text-gray-300">
+          Plan Details
+        </h1>
         <div className="w-6" />
       </header>
 
@@ -22,8 +24,11 @@ export default function Loading() {
 
       {/* Day Tabs Skeleton */}
       <div className="mb-8 flex flex-wrap items-center justify-center gap-2">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="h-8 w-24 bg-gray-200 rounded-full animate-pulse"></div>
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="h-8 w-24 bg-gray-200 rounded-full animate-pulse"
+          ></div>
         ))}
       </div>
 
@@ -31,8 +36,11 @@ export default function Loading() {
 
       {/* Spots Skeleton */}
       <div className="space-y-4">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="h-32 bg-gray-200 rounded-xl animate-pulse"></div>
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="h-32 bg-gray-200 rounded-xl animate-pulse"
+          ></div>
         ))}
       </div>
     </div>

@@ -1,9 +1,12 @@
 import { supabase } from './config'
 import type { Database } from '../../types/supabase'
 
-export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
-export type Inserts<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert']
-export type Updates<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
+export type Tables<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Row']
+export type Inserts<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Insert']
+export type Updates<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Update']
 
 // Spots API
 export const spotsApi = {
@@ -12,7 +15,7 @@ export const spotsApi = {
       .from('spots')
       .select('*')
       .order('created_at', { ascending: false })
-    
+
     if (error) throw error
     return data
   },
@@ -23,7 +26,7 @@ export const spotsApi = {
       .select('*')
       .eq('id', id)
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -34,7 +37,7 @@ export const spotsApi = {
       .select('*')
       .eq('slug', slug)
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -45,7 +48,7 @@ export const spotsApi = {
       .select('*')
       .contains('tags', ['popular'])
       .order('rating', { ascending: false })
-    
+
     if (error) throw error
     return data
   },
@@ -56,7 +59,7 @@ export const spotsApi = {
       .select('*')
       .contains('tags', ['featured'])
       .order('rating', { ascending: false })
-    
+
     if (error) throw error
     return data
   },
@@ -72,12 +75,14 @@ export const spotsApi = {
       .from('spots')
       .select('*')
       // PostgREST uses * as wildcard in filter strings
-      .or(`title.ilike.*${safe}*,description.ilike.*${safe}*,location.ilike.*${safe}*`)
+      .or(
+        `title.ilike.*${safe}*,description.ilike.*${safe}*,location.ilike.*${safe}*`
+      )
       .order('rating', { ascending: false })
-    
+
     if (error) throw error
     return data
-  }
+  },
 }
 
 // Categories API
@@ -87,7 +92,7 @@ export const categoriesApi = {
       .from('categories')
       .select('*')
       .order('name')
-    
+
     if (error) throw error
     return data
   },
@@ -98,10 +103,10 @@ export const categoriesApi = {
       .select('*')
       .eq('id', id)
       .single()
-    
+
     if (error) throw error
     return data
-  }
+  },
 }
 
 // Itineraries API
@@ -112,7 +117,7 @@ export const itinerariesApi = {
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-    
+
     if (error) throw error
     return data
   },
@@ -123,7 +128,7 @@ export const itinerariesApi = {
       .select('*')
       .eq('id', id)
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -134,7 +139,7 @@ export const itinerariesApi = {
       .insert(itinerary)
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -146,7 +151,7 @@ export const itinerariesApi = {
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -156,9 +161,9 @@ export const itinerariesApi = {
       .from('itineraries')
       .delete()
       .eq('id', id)
-    
+
     if (error) throw error
-  }
+  },
 }
 
 // Reviews API
@@ -166,23 +171,27 @@ export const reviewsApi = {
   async getBySpotId(spotId: string) {
     const { data, error } = await supabase
       .from('reviews')
-      .select(`
+      .select(
+        `
         *,
         profiles (
           name,
           avatar_url
         )
-      `)
+      `
+      )
       .eq('spot_id', spotId)
       .order('created_at', { ascending: false })
-    
+
     if (error) throw error
     return data
   },
 
   async create(review: Inserts<'reviews'>) {
     // Get current user
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     if (!user) throw new Error('User not authenticated')
 
     // Get user profile for denormalized fields
@@ -196,7 +205,7 @@ export const reviewsApi = {
       ...review,
       user_id: user.id,
       user_name: profile?.name || 'Anonymous',
-      user_avatar: profile?.avatar_url || null
+      user_avatar: profile?.avatar_url || null,
     }
 
     const { data, error } = await supabase
@@ -204,7 +213,7 @@ export const reviewsApi = {
       .insert(reviewData)
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -212,20 +221,22 @@ export const reviewsApi = {
   async getByUserId(userId: string) {
     const { data, error } = await supabase
       .from('reviews')
-      .select(`
+      .select(
+        `
         *,
         spots (
           title,
           slug,
           images
         )
-      `)
+      `
+      )
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-    
+
     if (error) throw error
     return data
-  }
+  },
 }
 
 // Profiles API
@@ -236,7 +247,7 @@ export const profilesApi = {
       .select('*')
       .eq('id', id)
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -248,8 +259,8 @@ export const profilesApi = {
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
     return data
-  }
+  },
 }

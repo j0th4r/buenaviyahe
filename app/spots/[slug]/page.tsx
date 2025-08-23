@@ -1,10 +1,10 @@
-'use client';
+'use client'
 
-import React from 'react';
-import Link from 'next/link';
-import {useEffect, useState, useCallback} from 'react';
-import {useRouter, useSearchParams, notFound} from 'next/navigation';
-import {motion} from 'framer-motion';
+import React from 'react'
+import Link from 'next/link'
+import { useEffect, useState, useCallback } from 'react'
+import { useRouter, useSearchParams, notFound } from 'next/navigation'
+import { motion } from 'framer-motion'
 import {
   ArrowLeft,
   ChevronLeft,
@@ -15,97 +15,104 @@ import {
   BedDouble,
   ChevronRight as ChevronRightSmall,
   ChevronDown,
-} from 'lucide-react';
+} from 'lucide-react'
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from '@/components/ui/sheet';
-import {appendSpot, getItinerary} from '@/lib/itinerary-store';
-import {useSpot} from '@/lib/api';
+} from '@/components/ui/sheet'
+import { appendSpot, getItinerary } from '@/lib/itinerary-store'
+import { useSpot } from '@/lib/api'
 import type { Spot as DbSpot } from '@/lib/api/spots'
 import { getImageUrl } from '@/lib/utils/image'
 
 function clampIndex(i: number, len: number) {
-  return ((i % len) + len) % len;
+  return ((i % len) + len) % len
 }
 function parsePriceToNumber(input: string): number {
-  const m = input.match(/(\d+(\.\d+)?)/);
-  return m ? Math.round(Number.parseFloat(m[1])) : 100;
+  const m = input.match(/(\d+(\.\d+)?)/)
+  return m ? Math.round(Number.parseFloat(m[1])) : 100
 }
 
-export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
+export default function SpotPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
   // All hooks must be called at the top level, before any conditional logic
-  const [index, setIndex] = useState(0);
-  const [openDrawer, setOpenDrawer] = useState(false);
-  const [overlayCollapsed, setOverlayCollapsed] = useState(false);
-  const [buttonInteractive, setButtonInteractive] = useState(true);
-  const resolvedParams = React.use(params);
-  const {data: spot, loading, error} = useSpot(resolvedParams.slug);
-  const router = useRouter();
+  const [index, setIndex] = useState(0)
+  const [openDrawer, setOpenDrawer] = useState(false)
+  const [overlayCollapsed, setOverlayCollapsed] = useState(false)
+  const [buttonInteractive, setButtonInteractive] = useState(true)
+  const resolvedParams = React.use(params)
+  const { data: spot, loading, error } = useSpot(resolvedParams.slug)
+  const router = useRouter()
 
   // Define functions that depend on spot data
   const goPrev = useCallback(() => {
     if (spot?.images) {
-      setIndex((i) => clampIndex(i - 1, spot.images.length));
+      setIndex((i) => clampIndex(i - 1, spot.images.length))
     }
-  }, [spot?.images]);
+  }, [spot?.images])
 
   const goNext = useCallback(() => {
     if (spot?.images) {
-      setIndex((i) => clampIndex(i + 1, spot.images.length));
+      setIndex((i) => clampIndex(i + 1, spot.images.length))
     }
-  }, [spot?.images]);
+  }, [spot?.images])
 
   const goTo = useCallback(
     (i: number) => {
       if (spot?.images) {
-        setIndex(clampIndex(i, spot.images.length));
+        setIndex(clampIndex(i, spot.images.length))
       }
     },
     [spot?.images]
-  );
+  )
 
   // Remove touch handlers since we're not making it draggable
 
   // Handle clicking the handle indicator to toggle collapsed state
-  const handleHandleClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (overlayCollapsed) {
-      setOverlayCollapsed(false);
-      // Disable button interaction briefly to prevent accidental clicks
-      setButtonInteractive(false);
-      setTimeout(() => {
-        setButtonInteractive(true);
-      }, 400); // Slightly longer than the 300ms animation
-    } else {
-      setOverlayCollapsed(true);
-    }
-  }, [overlayCollapsed]);
+  const handleHandleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (overlayCollapsed) {
+        setOverlayCollapsed(false)
+        // Disable button interaction briefly to prevent accidental clicks
+        setButtonInteractive(false)
+        setTimeout(() => {
+          setButtonInteractive(true)
+        }, 400) // Slightly longer than the 300ms animation
+      } else {
+        setOverlayCollapsed(true)
+      }
+    },
+    [overlayCollapsed]
+  )
 
   // Handle tap to restore overlay when collapsed (for the content area)
   const handleOverlayTap = useCallback(() => {
     if (overlayCollapsed) {
-      setOverlayCollapsed(false);
+      setOverlayCollapsed(false)
       // Disable button interaction briefly to prevent accidental clicks
-      setButtonInteractive(false);
+      setButtonInteractive(false)
       setTimeout(() => {
-        setButtonInteractive(true);
-      }, 400); // Slightly longer than the 300ms animation
+        setButtonInteractive(true)
+      }, 400) // Slightly longer than the 300ms animation
     }
-  }, [overlayCollapsed]);
+  }, [overlayCollapsed])
 
   // useEffect must be called unconditionally
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') goPrev();
-      if (e.key === 'ArrowRight') goNext();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [goPrev, goNext]);
+      if (e.key === 'ArrowLeft') goPrev()
+      if (e.key === 'ArrowRight') goNext()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [goPrev, goNext])
 
   // Now we can handle loading and error states
   if (loading) {
@@ -113,15 +120,15 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-white text-lg">Loading...</div>
       </div>
-    );
+    )
   }
 
   // Show error or not found
-  if (error || !spot) return notFound();
+  if (error || !spot) return notFound()
 
-  const fullStars = Math.floor(spot.rating);
-  const hasHalf = spot.rating % 1 >= 0.5;
-  const emptyStars = Math.max(0, 5 - fullStars - (hasHalf ? 1 : 0));
+  const fullStars = Math.floor(spot.rating)
+  const hasHalf = spot.rating % 1 >= 0.5
+  const emptyStars = Math.max(0, 5 - fullStars - (hasHalf ? 1 : 0))
 
   return (
     <>
@@ -168,31 +175,37 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
           </button>
         </div>
 
-        <motion.div 
+        <motion.div
           className="absolute inset-x-0 bottom-0 z-10"
           initial={false}
           animate={{
-            y: overlayCollapsed ? "calc(100% - 125px)" : 0
+            y: overlayCollapsed ? 'calc(100% - 125px)' : 0,
           }}
           transition={{
-            type: "spring",
+            type: 'spring',
             stiffness: overlayCollapsed ? 80 : 200,
             damping: overlayCollapsed ? 8 : 25,
             mass: 1.5,
-            duration: overlayCollapsed ? 0.8 : 0.4
+            duration: overlayCollapsed ? 0.8 : 0.4,
           }}
           onClick={handleOverlayTap}
         >
           {/* Always visible handle and minimal container */}
-          <div className={`rounded-t-3xl bg-black/30 backdrop-blur-sm transition-all duration-300 ${
-            overlayCollapsed ? 'p-3' : 'p-6'
-          }`}>
+          <div
+            className={`rounded-t-3xl bg-black/30 backdrop-blur-sm transition-all duration-300 ${
+              overlayCollapsed ? 'p-3' : 'p-6'
+            }`}
+          >
             {/* Down button indicator */}
             <div className="mb-4 flex justify-center">
-              <button 
+              <button
                 onClick={handleHandleClick}
                 className="flex items-center justify-center rounded-full p-2 hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
-                aria-label={overlayCollapsed ? "Expand overlay" : "Collapse overlay"}
+                aria-label={
+                  overlayCollapsed
+                    ? 'Expand overlay'
+                    : 'Collapse overlay'
+                }
               >
                 <motion.div
                   animate={{ rotate: overlayCollapsed ? 180 : 0 }}
@@ -206,8 +219,12 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
             {/* Collapsed state shows minimal content */}
             {overlayCollapsed ? (
               <div className="text-center">
-                <h1 className="text-lg font-bold truncate">{spot.title}</h1>
-                <p className="text-xs text-gray-300 mt-1">Tap to expand</p>
+                <h1 className="text-lg font-bold truncate">
+                  {spot.title}
+                </h1>
+                <p className="text-xs text-gray-300 mt-1">
+                  Tap to expand
+                </p>
               </div>
             ) : (
               <>
@@ -218,8 +235,8 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
                         key={i}
                         aria-label={`Go to image ${i + 1}`}
                         onClick={(e) => {
-                          e.stopPropagation();
-                          goTo(i);
+                          e.stopPropagation()
+                          goTo(i)
                         }}
                         className={`h-3 w-3 rounded-full transition ${
                           i === index
@@ -240,15 +257,27 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
 
                 <div className="mb-6 flex items-center">
                   <div className="flex text-yellow-400">
-                    {Array.from({length: fullStars}).map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-yellow-400" />
+                    {Array.from({ length: fullStars }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className="h-5 w-5 fill-yellow-400"
+                      />
                     ))}
-                    {hasHalf && <StarHalf className="h-5 w-5 fill-yellow-400" />}
-                    {Array.from({length: emptyStars}).map((_, i) => (
-                      <Star key={`e-${i}`} className="h-5 w-5 opacity-30" />
-                    ))}
+                    {hasHalf && (
+                      <StarHalf className="h-5 w-5 fill-yellow-400" />
+                    )}
+                    {Array.from({ length: emptyStars }).map(
+                      (_, i) => (
+                        <Star
+                          key={`e-${i}`}
+                          className="h-5 w-5 opacity-30"
+                        />
+                      )
+                    )}
                   </div>
-                  <span className="ml-2 text-sm">{spot.rating.toFixed(2)}</span>
+                  <span className="ml-2 text-sm">
+                    {spot.rating.toFixed(2)}
+                  </span>
                   <span className="ml-2 text-sm text-gray-200">
                     ({spot.reviews} reviews)
                   </span>
@@ -257,14 +286,14 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
                 <button
                   disabled={!buttonInteractive}
                   onClick={(e) => {
-                    e.stopPropagation();
+                    e.stopPropagation()
                     if (buttonInteractive) {
-                      setOpenDrawer(true);
+                      setOpenDrawer(true)
                     }
                   }}
                   className={`w-full rounded-full px-6 py-4 text-lg font-bold text-white shadow-md transition-all ${
-                    buttonInteractive 
-                      ? 'bg-teal-400 hover:bg-teal-400/90 cursor-pointer' 
+                    buttonInteractive
+                      ? 'bg-teal-400 hover:bg-teal-400/90 cursor-pointer'
                       : 'bg-teal-400/50 cursor-not-allowed'
                   }`}
                 >
@@ -276,9 +305,13 @@ export default function SpotPage({params}: {params: Promise<{slug: string}>}) {
         </motion.div>
       </div>
 
-      <PlanDrawer open={openDrawer} onOpenChange={setOpenDrawer} spot={spot} />
+      <PlanDrawer
+        open={openDrawer}
+        onOpenChange={setOpenDrawer}
+        spot={spot}
+      />
     </>
-  );
+  )
 }
 
 function PlanDrawer({
@@ -286,18 +319,18 @@ function PlanDrawer({
   onOpenChange,
   spot,
 }: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  spot: DbSpot;
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  spot: DbSpot
 }) {
-  const router = useRouter();
-  const params = useSearchParams();
-  const appendMode = params.get('append') === '1';
-  const dayParam = Number(params.get('day') || '1');
-  const hasItinerary = !!getItinerary();
-  const isAppending = appendMode || hasItinerary;
+  const router = useRouter()
+  const params = useSearchParams()
+  const appendMode = params.get('append') === '1'
+  const dayParam = Number(params.get('day') || '1')
+  const hasItinerary = !!getItinerary()
+  const isAppending = appendMode || hasItinerary
 
-  const pricePerNight = (spot.pricing as any)?.pricePerNight || 100;
+  const pricePerNight = (spot.pricing as any)?.pricePerNight || 100
 
   const handlePrimary = useCallback(() => {
     if (isAppending) {
@@ -313,10 +346,10 @@ function PlanDrawer({
           lng: spot.lng ?? undefined,
         },
         Number.isFinite(dayParam) && dayParam > 0 ? dayParam : 1
-      );
-      onOpenChange(false);
-      router.push(`/planner/itinerary?activeDay=${dayParam}`);
-      return;
+      )
+      onOpenChange(false)
+      router.push(`/planner/itinerary?activeDay=${dayParam}`)
+      return
     }
     const url = `/planner/new?title=${encodeURIComponent(
       spot.title
@@ -326,10 +359,17 @@ function PlanDrawer({
       spot.location
     )}&price=${pricePerNight}&rating=${spot.rating}&time=09:00&lat=${
       spot.lat
-    }&lng=${spot.lng}`;
-    onOpenChange(false);
-    router.push(url);
-  }, [isAppending, router, spot, onOpenChange, dayParam, pricePerNight]);
+    }&lng=${spot.lng}`
+    onOpenChange(false)
+    router.push(url)
+  }, [
+    isAppending,
+    router,
+    spot,
+    onOpenChange,
+    dayParam,
+    pricePerNight,
+  ])
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -346,7 +386,9 @@ function PlanDrawer({
           </SheetHeader>
 
           <div className="mt-6">
-            <h3 className="text-lg font-bold text-gray-800">Pricing</h3>
+            <h3 className="text-lg font-bold text-gray-800">
+              Pricing
+            </h3>
             <div className="mt-4 space-y-4">
               <div className="flex items-center justify-between border-b border-gray-200 py-4">
                 <div className="flex items-center space-x-4">
@@ -354,8 +396,13 @@ function PlanDrawer({
                     <Plane className="h-6 w-6 text-red-500" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-800">1 Night</p>
-                    <p className="text-gray-500">{(spot.pricing as any)?.oneNight || 'Price not available'}</p>
+                    <p className="font-semibold text-gray-800">
+                      1 Night
+                    </p>
+                    <p className="text-gray-500">
+                      {(spot.pricing as any)?.oneNight ||
+                        'Price not available'}
+                    </p>
                   </div>
                 </div>
                 <ChevronRightSmall className="h-5 w-5 text-gray-400" />
@@ -366,8 +413,13 @@ function PlanDrawer({
                     <BedDouble className="h-6 w-6 text-blue-500" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-800">2 Nights</p>
-                    <p className="text-gray-500">{(spot.pricing as any)?.twoNights || 'Price not available'}</p>
+                    <p className="font-semibold text-gray-800">
+                      2 Nights
+                    </p>
+                    <p className="text-gray-500">
+                      {(spot.pricing as any)?.twoNights ||
+                        'Price not available'}
+                    </p>
                   </div>
                 </div>
                 <ChevronRightSmall className="h-5 w-5 text-gray-400" />
@@ -386,5 +438,5 @@ function PlanDrawer({
         </div>
       </SheetContent>
     </Sheet>
-  );
+  )
 }

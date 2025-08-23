@@ -1,6 +1,6 @@
 /**
  * Categories API Slice
- * 
+ *
  * API functions for managing travel spot categories.
  */
 
@@ -19,20 +19,19 @@ export async function getCategories(): Promise<Category[]> {
 /**
  * Get a specific category by ID
  */
-export async function getCategory(id: string): Promise<Category | null> {
+export async function getCategory(
+  id: string
+): Promise<Category | null> {
   try {
     return await categoriesApi.getById(id)
   } catch (error) {
     // Return null for 404 errors, re-throw others
-    if (error instanceof Error && error.message.includes('No rows found')) {
+    if (
+      error instanceof Error &&
+      error.message.includes('No rows found')
+    ) {
       return null
     }
     throw error
   }
 }
-
-
-
-
-
-

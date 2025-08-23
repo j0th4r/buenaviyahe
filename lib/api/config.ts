@@ -1,6 +1,6 @@
 /**
  * API Configuration
- * 
+ *
  * Central configuration for API endpoints and settings.
  */
 
@@ -10,22 +10,22 @@
 export const API_ENDPOINTS = {
   // Health
   health: '/api/health',
-  
+
   // Spots
   spots: '/api/spots',
   spot: (id: string) => `/api/spots/${id}`,
   spotsPopular: '/api/spots/popular',
   spotsFeatured: '/api/spots/featured',
-  
+
   // Categories
   categories: '/api/categories',
   category: (id: string) => `/api/categories/${id}`,
   categorySpots: (id: string) => `/api/categories/${id}/spots`,
-  
+
   // Reviews
   reviews: '/api/reviews',
   spotReviews: (spotId: string) => `/api/spots/${spotId}/reviews`,
-  
+
   // Search
   search: '/api/search',
 
@@ -55,13 +55,15 @@ export const QUERY_KEYS = {
   spot: (id: string) => ['spots', id] as const,
   spotsPopular: ['spots', 'popular'] as const,
   spotsFeatured: ['spots', 'featured'] as const,
-  spotsCategory: (category: string) => ['spots', 'category', category] as const,
-  
+  spotsCategory: (category: string) =>
+    ['spots', 'category', category] as const,
+
   categories: ['categories'] as const,
   category: (id: string) => ['categories', id] as const,
-  
+
   reviews: ['reviews'] as const,
-  spotReviews: (spotId: string) => ['reviews', 'spot', spotId] as const,
-  
+  spotReviews: (spotId: string) =>
+    ['reviews', 'spot', spotId] as const,
+
   search: (query: string) => ['search', query] as const,
 } as const

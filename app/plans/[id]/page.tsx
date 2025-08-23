@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import {useEffect, useMemo, useState} from 'react';
-import {useParams, useRouter} from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import {
   Star,
   StarHalf,
@@ -10,85 +10,85 @@ import {
   Calendar,
   MapPin,
   Map,
-} from 'lucide-react';
+} from 'lucide-react'
 import {
   format,
   addDays,
   differenceInCalendarDays,
   parseISO,
   isValid,
-} from 'date-fns';
-import {getItinerary as getItineraryFromAPI} from '@/lib/api';
-import type {Itinerary} from '@/lib/itinerary-store';
+} from 'date-fns'
+import { getItinerary as getItineraryFromAPI } from '@/lib/api'
+import type { Itinerary } from '@/lib/itinerary-store'
 
 export default function PlanDetailsPage() {
-  const params = useParams();
-  const router = useRouter();
-  const [itinerary, setItinerary] = useState<Itinerary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeDay, setActiveDay] = useState<number>(1);
+  const params = useParams()
+  const router = useRouter()
+  const [itinerary, setItinerary] = useState<Itinerary | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [activeDay, setActiveDay] = useState<number>(1)
 
-  const itineraryId = params.id as string;
+  const itineraryId = params.id as string
 
   useEffect(() => {
     const loadItinerary = async () => {
       try {
-        setLoading(true);
-        const data = await getItineraryFromAPI(itineraryId);
+        setLoading(true)
+        const data = await getItineraryFromAPI(itineraryId)
         if (data) {
-          setItinerary(data);
+          setItinerary(data)
         } else {
-          setError('Itinerary not found');
+          setError('Itinerary not found')
         }
       } catch (err) {
-        console.error('Failed to load itinerary:', err);
-        setError('Failed to load itinerary');
+        console.error('Failed to load itinerary:', err)
+        setError('Failed to load itinerary')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
     if (itineraryId) {
-      loadItinerary();
+      loadItinerary()
     }
-  }, [itineraryId]);
+  }, [itineraryId])
 
   // Build days for chip labels
-  const fromParam = itinerary?.start;
-  const toParam = itinerary?.end;
-  const from = fromParam ? parseISO(fromParam) : undefined;
-  const to = toParam ? parseISO(toParam) : undefined;
+  const fromParam = itinerary?.start
+  const toParam = itinerary?.end
+  const from = fromParam ? parseISO(fromParam) : undefined
+  const to = toParam ? parseISO(toParam) : undefined
 
   const days = useMemo(() => {
     if (from && to && isValid(from) && isValid(to) && from <= to) {
-      const len = differenceInCalendarDays(to, from) + 1;
-      return Array.from({length: len}, (_, i) => addDays(from, i));
+      const len = differenceInCalendarDays(to, from) + 1
+      return Array.from({ length: len }, (_, i) => addDays(from, i))
     }
-    return [];
-  }, [from, to]);
+    return []
+  }, [from, to])
 
   const totalDays = itinerary?.days
     ? Object.keys(itinerary.days).length
-    : days.length;
-  const dayList = Array.from({length: totalDays}, (_, i) => i + 1);
+    : days.length
+  const dayList = Array.from({ length: totalDays }, (_, i) => i + 1)
 
   const spotsForActiveDay = useMemo(
     () => itinerary?.days?.[activeDay] ?? [],
     [itinerary, activeDay]
-  );
+  )
 
   const countForDay = (dIndex: number) =>
-    itinerary?.days?.[dIndex]?.length ?? 0;
+    itinerary?.days?.[dIndex]?.length ?? 0
 
   // Ratings component
-  const Rating = ({value}: {value: number}) => {
-    const full = Math.floor(value);
-    const half = value % 1 >= 0.5;
-    const empty = Math.max(0, 5 - full - (half ? 1 : 0));
+  const Rating = ({ value }: { value: number }) => {
+    const full = Math.floor(value)
+    const half = value % 1 >= 0.5
+    const empty = Math.max(0, 5 - full - (half ? 1 : 0))
     return (
       <div className="flex items-center">
-        {Array.from({length: full}).map((_, i) => (
+        {Array.from({ length: full }).map((_, i) => (
           <Star
             key={`f-${i}`}
             className="h-5 w-5 text-yellow-400 fill-yellow-400"
@@ -97,12 +97,12 @@ export default function PlanDetailsPage() {
         {half && (
           <StarHalf className="h-5 w-5 text-yellow-400 fill-yellow-400" />
         )}
-        {Array.from({length: empty}).map((_, i) => (
+        {Array.from({ length: empty }).map((_, i) => (
           <Star key={`e-${i}`} className="h-5 w-5 text-gray-400" />
         ))}
       </div>
-    );
-  };
+    )
+  }
 
   if (loading) {
     return (
@@ -114,7 +114,7 @@ export default function PlanDetailsPage() {
           </span>
         </div>
       </div>
-    );
+    )
   }
 
   if (error || !itinerary) {
@@ -151,7 +151,7 @@ export default function PlanDetailsPage() {
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -177,8 +177,8 @@ export default function PlanDetailsPage() {
         aria-label="Travel plan days"
       >
         {dayList.map((dIndex) => {
-          const active = activeDay === dIndex;
-          const count = countForDay(dIndex);
+          const active = activeDay === dIndex
+          const count = countForDay(dIndex)
           return (
             <button
               key={dIndex}
@@ -192,18 +192,22 @@ export default function PlanDetailsPage() {
               }`}
             >
               {`Day ${dIndex}`}{' '}
-              {days[dIndex - 1] ? `• ${format(days[dIndex - 1], 'MMM d')}` : ''}
+              {days[dIndex - 1]
+                ? `• ${format(days[dIndex - 1], 'MMM d')}`
+                : ''}
               {count > 0 && (
                 <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-500 px-1 text-xs font-semibold text-white">
                   {count}
                 </span>
               )}
             </button>
-          );
+          )
         })}
       </div>
 
-      <h3 className="mb-4 text-lg font-semibold">Day {activeDay} Activities</h3>
+      <h3 className="mb-4 text-lg font-semibold">
+        Day {activeDay} Activities
+      </h3>
 
       <div className="space-y-4">
         {spotsForActiveDay.length ? (
@@ -231,7 +235,9 @@ export default function PlanDetailsPage() {
                       <Rating value={s.rating ?? 4.5} />
                     </div>
                     {s.location && (
-                      <p className="text-white/90 text-sm mt-1">{s.location}</p>
+                      <p className="text-white/90 text-sm mt-1">
+                        {s.location}
+                      </p>
                     )}
                   </div>
                   {s.time && (
@@ -247,7 +253,9 @@ export default function PlanDetailsPage() {
         ) : (
           <div className="grid place-items-center rounded-xl border border-dashed p-8 text-center text-gray-500">
             <Calendar className="h-12 w-12 text-gray-300 mb-2" />
-            <p className="text-lg font-medium">No activities for this day</p>
+            <p className="text-lg font-medium">
+              No activities for this day
+            </p>
             <p className="text-sm">
               Activities will appear here once added to the plan.
             </p>
@@ -272,5 +280,5 @@ export default function PlanDetailsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

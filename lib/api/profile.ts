@@ -12,7 +12,9 @@ export type UserProfile = {
 }
 
 // Convert Supabase profile to app profile format
-function convertFromSupabase(supabaseProfile: Tables<'profiles'>): UserProfile {
+function convertFromSupabase(
+  supabaseProfile: Tables<'profiles'>
+): UserProfile {
   return {
     name: supabaseProfile.name,
     city: supabaseProfile.city,
@@ -29,19 +31,29 @@ function convertToSupabase(profile: Partial<UserProfile>): any {
   return {
     ...(profile.name !== undefined && { name: profile.name }),
     ...(profile.city !== undefined && { city: profile.city }),
-    ...(profile.website !== undefined && { website: profile.website }),
+    ...(profile.website !== undefined && {
+      website: profile.website,
+    }),
     ...(profile.about !== undefined && { about: profile.about }),
-    ...(profile.joinedYear !== undefined && { joined_year: profile.joinedYear }),
-    ...(profile.contributions !== undefined && { contributions: profile.contributions }),
-    ...(profile.avatarUrl !== undefined && { avatar_url: profile.avatarUrl }),
+    ...(profile.joinedYear !== undefined && {
+      joined_year: profile.joinedYear,
+    }),
+    ...(profile.contributions !== undefined && {
+      contributions: profile.contributions,
+    }),
+    ...(profile.avatarUrl !== undefined && {
+      avatar_url: profile.avatarUrl,
+    }),
   }
 }
 
 export async function getProfile(): Promise<UserProfile> {
   try {
     const { supabase } = await import('@/lib/supabase/config')
-    const { data: { user } } = await supabase.auth.getUser()
-    
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
     if (!user) {
       throw new Error('User not authenticated')
     }
@@ -50,40 +62,55 @@ export async function getProfile(): Promise<UserProfile> {
     return convertFromSupabase(supabaseProfile)
   } catch (error) {
     // If profile doesn't exist, return a default profile structure
-    if (error instanceof Error && error.message.includes('No rows found')) {
+    if (
+      error instanceof Error &&
+      error.message.includes('No rows found')
+    ) {
       return {
-        name: "New User",
-        city: "",
-        website: "",
-        about: "",
+        name: 'New User',
+        city: '',
+        website: '',
+        about: '',
         joinedYear: new Date().getFullYear(),
         contributions: 0,
-        avatarUrl: "/uploads/avatar_1755665481.jpg",
+        avatarUrl: '/uploads/avatar_1755665481.jpg',
       }
     }
     throw error
   }
 }
 
-export async function updateProfile(data: Partial<UserProfile>): Promise<UserProfile> {
+export async function updateProfile(
+  data: Partial<UserProfile>
+): Promise<UserProfile> {
   const supabaseData = convertToSupabase(data)
-  
+
   try {
     const { supabase } = await import('@/lib/supabase/config')
-    const { data: { user } } = await supabase.auth.getUser()
-    
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
     if (!user) {
       throw new Error('User not authenticated')
     }
 
-    const supabaseProfile = await profilesApi.update(user.id, supabaseData)
+    const supabaseProfile = await profilesApi.update(
+      user.id,
+      supabaseData
+    )
     return convertFromSupabase(supabaseProfile)
   } catch (error) {
     // If profile doesn't exist, create it
-    if (error instanceof Error && error.message.includes('No rows found')) {
+    if (
+      error instanceof Error &&
+      error.message.includes('No rows found')
+    ) {
       const { supabase } = await import('@/lib/supabase/config')
-      const { data: { user } } = await supabase.auth.getUser()
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
       if (!user) {
         throw new Error('User not authenticated')
       }
@@ -102,7 +129,7 @@ export async function updateProfile(data: Partial<UserProfile>): Promise<UserPro
         })
         .select()
         .single()
-      
+
       if (createError) throw createError
       return convertFromSupabase(newProfile)
     }
@@ -113,8 +140,10 @@ export async function updateProfile(data: Partial<UserProfile>): Promise<UserPro
 export async function uploadAvatar(file: File): Promise<string> {
   try {
     const { supabase } = await import('@/lib/supabase/config')
-    const { data: { user } } = await supabase.auth.getUser()
-    
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
     if (!user) {
       throw new Error('User not authenticated')
     }
@@ -128,7 +157,7 @@ export async function uploadAvatar(file: File): Promise<string> {
       .from('avatars')
       .upload(fileName, file, {
         cacheControl: '3600',
-        upsert: false // Don't overwrite existing files
+        upsert: false, // Don't overwrite existing files
       })
 
     if (error) {
@@ -136,9 +165,9 @@ export async function uploadAvatar(file: File): Promise<string> {
     }
 
     // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(fileName)
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from('avatars').getPublicUrl(fileName)
 
     return publicUrl
   } catch (error) {
@@ -150,11 +179,11 @@ export async function uploadAvatar(file: File): Promise<string> {
 export async function deleteAvatar(avatarUrl: string): Promise<void> {
   try {
     const { supabase } = await import('@/lib/supabase/config')
-    
+
     // Extract filename from URL
     const urlParts = avatarUrl.split('/')
     const fileName = urlParts.slice(-2).join('/') // Get userId/filename.ext
-    
+
     const { error } = await supabase.storage
       .from('avatars')
       .remove([fileName])
@@ -168,7 +197,7 @@ export async function deleteAvatar(avatarUrl: string): Promise<void> {
 }
 
 export async function updateProfileWithAvatar(
-  data: Partial<UserProfile>, 
+  data: Partial<UserProfile>,
   avatarFile?: File
 ): Promise<UserProfile> {
   try {
@@ -177,11 +206,13 @@ export async function updateProfileWithAvatar(
     // Upload new avatar if provided
     if (avatarFile) {
       avatarUrl = await uploadAvatar(avatarFile)
-      
+
       // Delete old avatar if it exists and is not a placeholder
-      if (data.avatarUrl && 
-          data.avatarUrl !== '/placeholder-user.jpg' && 
-          data.avatarUrl.includes('supabase')) {
+      if (
+        data.avatarUrl &&
+        data.avatarUrl !== '/placeholder-user.jpg' &&
+        data.avatarUrl.includes('supabase')
+      ) {
         await deleteAvatar(data.avatarUrl)
       }
     }
@@ -189,7 +220,7 @@ export async function updateProfileWithAvatar(
     // Update profile with new avatar URL
     return await updateProfile({
       ...data,
-      avatarUrl
+      avatarUrl,
     })
   } catch (error) {
     console.error('Error updating profile with avatar:', error)
@@ -197,19 +228,28 @@ export async function updateProfileWithAvatar(
   }
 }
 
-export function validateAvatarFile(file: File): { valid: boolean; error?: string } {
+export function validateAvatarFile(file: File): {
+  valid: boolean
+  error?: string
+} {
   // Check file size (limit to 5MB)
   if (file.size > 5 * 1024 * 1024) {
     return { valid: false, error: 'File size must be less than 5MB' }
   }
 
   // Check file type
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+  const allowedTypes = [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+  ]
   if (!allowedTypes.includes(file.type)) {
-    return { valid: false, error: 'Only JPEG, PNG, and WebP images are allowed' }
+    return {
+      valid: false,
+      error: 'Only JPEG, PNG, and WebP images are allowed',
+    }
   }
 
   return { valid: true }
 }
-
-

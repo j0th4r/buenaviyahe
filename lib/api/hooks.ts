@@ -1,6 +1,6 @@
 /**
  * API Hooks
- * 
+ *
  * Custom React hooks for data fetching using the API client.
  * These hooks provide a simple interface for components to fetch data.
  */
@@ -38,16 +38,16 @@ function useApiData<T>(
     loading: true,
     error: null,
   })
-  
+
   // Client-side mounting flag to prevent hydration mismatches
   const [isMounted, setIsMounted] = useState(false)
 
   const fetchData = useCallback(async () => {
     // Only fetch data on client side
     if (typeof window === 'undefined') return
-    
-    setState(prev => ({ ...prev, loading: true, error: null }))
-    
+
+    setState((prev) => ({ ...prev, loading: true, error: null }))
+
     try {
       const data = await fetchFn()
       setState({ data, loading: false, error: null })
@@ -86,27 +86,21 @@ export function useSpots(params?: GetSpotsParams) {
 }
 
 export function useSpot(id: string) {
-  return useApiData(
-    () => spotsApi.getSpot(id),
-    [id]
-  )
+  return useApiData(() => spotsApi.getSpot(id), [id])
 }
 
 export function usePopularSpots(limit?: number) {
-  return useApiData(
-    () => spotsApi.getPopularSpots(limit),
-    [limit]
-  )
+  return useApiData(() => spotsApi.getPopularSpots(limit), [limit])
 }
 
 export function useFeaturedSpots(limit?: number) {
-  return useApiData(
-    () => spotsApi.getFeaturedSpots(limit),
-    [limit]
-  )
+  return useApiData(() => spotsApi.getFeaturedSpots(limit), [limit])
 }
 
-export function useSpotsByCategory(categoryId: string, limit?: number) {
+export function useSpotsByCategory(
+  categoryId: string,
+  limit?: number
+) {
   return useApiData(
     () => spotsApi.getSpotsByCategory(categoryId, limit),
     [categoryId, limit]
@@ -126,10 +120,7 @@ export function useCategories() {
 }
 
 export function useCategory(id: string) {
-  return useApiData(
-    () => categoriesApi.getCategory(id),
-    [id]
-  )
+  return useApiData(() => categoriesApi.getCategory(id), [id])
 }
 
 // Reviews hooks
@@ -171,8 +162,11 @@ export function useItinerary(id: string) {
 export function useHealthCheck() {
   return useApiData(() => {
     return fetch('http://localhost:3001/api/health')
-      .then(res => res.json())
-      .catch(() => ({ status: 'ERROR', message: 'API server is not running' }))
+      .then((res) => res.json())
+      .catch(() => ({
+        status: 'ERROR',
+        message: 'API server is not running',
+      }))
   })
 }
 
@@ -183,7 +177,10 @@ export function useProfile() {
 
 export function useUpdateProfile() {
   // Expose a helper that updates then refetches
-  const [state, setState] = useState<{ loading: boolean; error: Error | null }>({ loading: false, error: null })
+  const [state, setState] = useState<{
+    loading: boolean
+    error: Error | null
+  }>({ loading: false, error: null })
   const update = async (data: Partial<profileApi.UserProfile>) => {
     setState({ loading: true, error: null })
     try {

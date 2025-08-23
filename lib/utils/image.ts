@@ -1,11 +1,14 @@
 import { getStorageUrl } from '../supabase/storage'
 
-export function getImageUrl(path: string, options?: {
-  width?: number
-  height?: number
-  quality?: number
-  format?: 'webp' | 'jpeg' | 'png'
-}): string {
+export function getImageUrl(
+  path: string,
+  options?: {
+    width?: number
+    height?: number
+    quality?: number
+    format?: 'webp' | 'jpeg' | 'png'
+  }
+): string {
   // If it's already a full URL, return as is
   if (path.startsWith('http')) {
     return path
@@ -14,11 +17,11 @@ export function getImageUrl(path: string, options?: {
   // If it's a local path, convert to storage URL
   if (path.startsWith('/images/')) {
     const cleanPath = path.replace('/images/', '')
-    
+
     return getStorageUrl({
       bucket: 'images',
       path: cleanPath,
-      transform: options
+      transform: options,
     })
   }
 

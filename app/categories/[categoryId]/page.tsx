@@ -1,12 +1,12 @@
-"use client"
+'use client'
 
-import React from "react"
+import React from 'react'
 import Link from 'next/link'
-import { useSearchParams, notFound } from "next/navigation"
+import { useSearchParams, notFound } from 'next/navigation'
 import { ArrowLeft, Star, Filter, Grid3X3 } from 'lucide-react'
-import { useCategory, useSpotsByCategory } from "@/lib/api"
-import { getImageUrl } from "@/lib/utils/image"
-import { cn } from "@/lib/utils"
+import { useCategory, useSpotsByCategory } from '@/lib/api'
+import { getImageUrl } from '@/lib/utils/image'
+import { cn } from '@/lib/utils'
 
 interface CategoryPageProps {
   params: Promise<{ categoryId: string }>
@@ -15,17 +15,23 @@ interface CategoryPageProps {
 export default function CategoryPage({ params }: CategoryPageProps) {
   const resolvedParams = React.use(params)
   const searchParams = useSearchParams()
-  const append = searchParams.get("append")
-  const day = searchParams.get("day")
-  
-  const { data: category, loading: categoryLoading } = useCategory(resolvedParams.categoryId)
-  const { data: spots, loading: spotsLoading, error } = useSpotsByCategory(resolvedParams.categoryId)
+  const append = searchParams.get('append')
+  const day = searchParams.get('day')
+
+  const { data: category, loading: categoryLoading } = useCategory(
+    resolvedParams.categoryId
+  )
+  const {
+    data: spots,
+    loading: spotsLoading,
+    error,
+  } = useSpotsByCategory(resolvedParams.categoryId)
 
   const withForward = (href: string) => {
-    const url = new URL(href, "http://dummy")
-    if (append) url.searchParams.set("append", "1")
-    if (day) url.searchParams.set("day", day)
-    return url.pathname + (url.search ? url.search : "")
+    const url = new URL(href, 'http://dummy')
+    if (append) url.searchParams.set('append', '1')
+    if (day) url.searchParams.set('day', day)
+    return url.pathname + (url.search ? url.search : '')
   }
 
   // Show loading for category info
@@ -83,7 +89,9 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                 </p>
                 <div className="flex items-center gap-1">
                   <Grid3X3 className="h-4 w-4 text-teal-300" />
-                  <span className="text-sm text-teal-300">Browse all</span>
+                  <span className="text-sm text-teal-300">
+                    Browse all
+                  </span>
                 </div>
               </div>
             </div>
@@ -107,8 +115,11 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         <section className="mb-8">
           {spotsLoading ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="h-[320px] animate-pulse rounded-2xl bg-gray-200" />
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div
+                  key={i}
+                  className="h-[320px] animate-pulse rounded-2xl bg-gray-200"
+                />
               ))}
             </div>
           ) : error || !spots?.length ? (
@@ -151,7 +162,9 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             className="inline-flex items-center gap-2 px-6 py-3 text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-full transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span className="font-medium">Back to All Categories</span>
+            <span className="font-medium">
+              Back to All Categories
+            </span>
           </Link>
         </div>
       </main>
@@ -179,21 +192,21 @@ function SpotCard({ spot, href }: SpotCardProps) {
     >
       <div className="aspect-[4/3] overflow-hidden">
         <img
-          src={getImageUrl(spot.images[0] || "/placeholder.svg?height=240&width=320")}
+          src={getImageUrl(
+            spot.images[0] || '/placeholder.svg?height=240&width=320'
+          )}
           alt={spot.title}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
         />
       </div>
-      
+
       <div className="p-4">
         <h3 className="font-bold text-lg text-gray-900 mb-1 group-hover:text-teal-600 transition-colors">
           {spot.title}
         </h3>
-        <p className="text-gray-500 text-sm mb-3">
-          {spot.location}
-        </p>
-        
+        <p className="text-gray-500 text-sm mb-3">{spot.location}</p>
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
             <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />

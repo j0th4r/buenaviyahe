@@ -1,6 +1,6 @@
 /**
  * Spots API Slice
- * 
+ *
  * API functions for managing travel spots data.
  */
 
@@ -18,26 +18,36 @@ export async function getSpot(id: string): Promise<Spot> {
   return spotsApi.getById(id)
 }
 
-export async function getPopularSpots(limit?: number): Promise<Spot[]> {
+export async function getPopularSpots(
+  limit?: number
+): Promise<Spot[]> {
   const spots = await spotsApi.getPopular()
   return limit ? spots.slice(0, limit) : spots
 }
 
-export async function getFeaturedSpots(limit?: number): Promise<Spot[]> {
+export async function getFeaturedSpots(
+  limit?: number
+): Promise<Spot[]> {
   const spots = await spotsApi.getFeatured()
   return limit ? spots.slice(0, limit) : spots
 }
 
-export async function getSpotsByCategory(categoryId: string, limit?: number): Promise<Spot[]> {
+export async function getSpotsByCategory(
+  categoryId: string,
+  limit?: number
+): Promise<Spot[]> {
   // For now, filter spots by category tag
   const allSpots = await spotsApi.getAll()
-  const filteredSpots = allSpots.filter(spot => 
-    spot.tags && spot.tags.includes(categoryId)
+  const filteredSpots = allSpots.filter(
+    (spot) => spot.tags && spot.tags.includes(categoryId)
   )
   return limit ? filteredSpots.slice(0, limit) : filteredSpots
 }
 
-export async function searchSpots(params: { query: string; limit?: number }): Promise<Spot[]> {
+export async function searchSpots(params: {
+  query: string
+  limit?: number
+}): Promise<Spot[]> {
   const spots = await spotsApi.search(params.query)
   return params.limit ? spots.slice(0, params.limit) : spots
 }
@@ -66,5 +76,5 @@ export const spotsService = {
 
   async search(query: string): Promise<Spot[]> {
     return spotsApi.search(query)
-  }
+  },
 }

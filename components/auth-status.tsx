@@ -1,13 +1,15 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import { useAuth } from "@/hooks/use-auth"
+import Link from 'next/link'
+import { useAuth } from '@/hooks/use-auth'
 
 export function AuthStatus() {
   const { user, loading } = useAuth()
 
   if (loading) {
-    return <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200" />
+    return (
+      <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200" />
+    )
   }
 
   if (user) {
@@ -17,7 +19,7 @@ export function AuthStatus() {
         className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-teal-600 hover:bg-teal-200"
       >
         <span className="text-sm font-semibold">
-          {user.email?.charAt(0).toUpperCase() || "U"}
+          {user.email?.charAt(0).toUpperCase() || 'U'}
         </span>
       </Link>
     )

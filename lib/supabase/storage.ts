@@ -21,13 +21,18 @@ export interface StorageUrlOptions {
 /**
  * Upload a file to Supabase Storage
  */
-export async function uploadFile({ bucket, path, file, contentType }: UploadOptions) {
+export async function uploadFile({
+  bucket,
+  path,
+  file,
+  contentType,
+}: UploadOptions) {
   try {
     const { data, error } = await supabase.storage
       .from(bucket)
       .upload(path, file, {
         contentType: contentType || file.type,
-        upsert: true
+        upsert: true,
       })
 
     if (error) throw error
@@ -41,19 +46,29 @@ export async function uploadFile({ bucket, path, file, contentType }: UploadOpti
 /**
  * Get a public URL for a file in Supabase Storage
  */
-export function getStorageUrl({ bucket, path, transform }: StorageUrlOptions): string {
-  const baseUrl = supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl
-  
+export function getStorageUrl({
+  bucket,
+  path,
+  transform,
+}: StorageUrlOptions): string {
+  const baseUrl = supabase.storage.from(bucket).getPublicUrl(path)
+    .data.publicUrl
+
   if (!transform) return baseUrl
-  
+
   // Add transformation parameters
   const params = new URLSearchParams()
-  if (transform.width) params.append('width', transform.width.toString())
-  if (transform.height) params.append('height', transform.height.toString())
-  if (transform.quality) params.append('quality', transform.quality.toString())
+  if (transform.width)
+    params.append('width', transform.width.toString())
+  if (transform.height)
+    params.append('height', transform.height.toString())
+  if (transform.quality)
+    params.append('quality', transform.quality.toString())
   if (transform.format) params.append('format', transform.format)
-  
-  return params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl
+
+  return params.toString()
+    ? `${baseUrl}?${params.toString()}`
+    : baseUrl
 }
 
 /**
