@@ -3,7 +3,11 @@
 import React from 'react'
 import Link from 'next/link'
 import { useEffect, useState, useCallback } from 'react'
-import { useRouter, useSearchParams, notFound } from 'next/navigation'
+import {
+  useRouter,
+  useSearchParams,
+  useParams,
+} from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
   ArrowLeft,
@@ -32,16 +36,14 @@ function clampIndex(i: number, len: number) {
   return ((i % len) + len) % len
 }
 
-export default function SpotPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
+export default function SpotPage() {
+  const params = useParams()
+  const slug = params.slug as string
+  const { data: spot, loading, error } = useSpot(slug)
+
   // All hooks must be called at the top level, before any conditional logic
   const [index, setIndex] = useState(0)
   const [openDrawer, setOpenDrawer] = useState(false)
-  const resolvedParams = React.use(params)
-  const { data: spot, loading, error } = useSpot(resolvedParams.slug)
   const router = useRouter()
 
   // Define functions that depend on spot data
@@ -86,7 +88,13 @@ export default function SpotPage({
   }
 
   // Show error or not found
-  if (error || !spot) return notFound()
+  if (error || !spot) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white/90">Spot not found</div>
+      </div>
+    )
+  }
 
   const fullStars = Math.floor(spot.rating)
   const hasHalf = spot.rating % 1 >= 0.5
@@ -145,7 +153,7 @@ export default function SpotPage({
           emptyStars={emptyStars}
           goTo={goTo}
           onOpenDrawer={() => setOpenDrawer(true)}
-          slug={resolvedParams.slug}
+          slug={slug}
         />
       </div>
 
@@ -173,6 +181,8 @@ function PlanDrawer({
   const params = useSearchParams()
   const appendMode = params.get('append') === '1'
   const dayParam = Number(params.get('day') || '1')
+  const safeDay =
+    Number.isFinite(dayParam) && dayParam > 0 ? dayParam : 1
   const hasItinerary = !!getItinerary()
   const isAppending = appendMode || hasItinerary
 
@@ -191,10 +201,10 @@ function PlanDrawer({
           lat: spot.lat ?? undefined,
           lng: spot.lng ?? undefined,
         },
-        Number.isFinite(dayParam) && dayParam > 0 ? dayParam : 1
+        safeDay
       )
       onOpenChange(false)
-      router.push(`/planner/itinerary?activeDay=${dayParam}`)
+      router.push(`/planner/itinerary?activeDay=${safeDay}`)
       return
     }
     const url = `/planner/new?title=${encodeURIComponent(

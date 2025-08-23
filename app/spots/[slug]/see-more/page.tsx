@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
   ArrowLeft,
@@ -35,13 +36,10 @@ import {
 } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 
-export default function SpotSeeMorePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
-  const resolvedParams = React.use(params)
-  const { data: spot, loading, error } = useSpot(resolvedParams.slug)
+export default function SpotSeeMorePage() {
+  const params = useParams()
+  const slug = params.slug as string
+  const { data: spot, loading, error } = useSpot(slug)
 
   if (loading) {
     return (
@@ -93,7 +91,7 @@ export default function SpotSeeMorePage({
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link
-              href={`/spots/${resolvedParams.slug}`}
+              href={`/spots/${slug}`}
               className="inline-flex items-center text-gray-600 hover:text-gray-800 transition-colors"
             >
               <ArrowLeft className="h-5 w-5 mr-2" />
@@ -141,7 +139,7 @@ export default function SpotSeeMorePage({
                 </h1>
               </div>
 
-                {/* <Card>
+              {/* <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">
                       Quick Info
@@ -173,19 +171,19 @@ export default function SpotSeeMorePage({
           transition={{ duration: 0.5, delay: 0.1 }}
           className="mb-8"
         >
-          <Card className='gap-1'>
+          <Card className="gap-1">
             <CardHeader>
               <CardTitle className="text-lg">
                 About this place
               </CardTitle>
             </CardHeader>
-            <CardContent className='mt-2'>
+            <CardContent className="mt-2">
               <p className="text-gray-700 leading-relaxed">
                 {spot.description}
               </p>
             </CardContent>
             {/* Culture */}
-            <CardHeader className='mt-6'>
+            <CardHeader className="mt-6">
               <CardTitle>Historical</CardTitle>
             </CardHeader>
             <CardContent>
@@ -194,7 +192,7 @@ export default function SpotSeeMorePage({
               </p>
             </CardContent>
 
-            <CardHeader className='mt-6'>
+            <CardHeader className="mt-6">
               <CardTitle>Aesthetic</CardTitle>
             </CardHeader>
             <CardContent>
@@ -203,7 +201,7 @@ export default function SpotSeeMorePage({
               </p>
             </CardContent>
 
-            <CardHeader className='mt-6'>
+            <CardHeader className="mt-6">
               <CardTitle>Scientific</CardTitle>
             </CardHeader>
             <CardContent>
@@ -212,7 +210,7 @@ export default function SpotSeeMorePage({
               </p>
             </CardContent>
 
-            <CardHeader className='mt-6'>
+            <CardHeader className="mt-6">
               <CardTitle>Economic</CardTitle>
             </CardHeader>
             <CardContent>
