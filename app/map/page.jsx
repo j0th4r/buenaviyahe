@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/drawer'
 import { getSpots } from '@/lib/api'
 import { getImageUrl } from '@/lib/utils/image'
+import Loader from '@/components/ui/loader'
 
 const defaultCenter = { lat: 8.9731834, lng: 125.4085344 }
 
@@ -164,14 +165,16 @@ export default function MapPage() {
 
   if (loading || locationLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
-        <span className="ml-3 text-lg text-gray-600">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100">
+        <Loader />
+        <span className="mt-4 text-lg text-gray-600">
           {locationLoading
             ? 'Getting your location...'
             : 'Loading map...'}
         </span>
+        <BottomTabs />
       </div>
+      
     )
   }
 

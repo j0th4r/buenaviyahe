@@ -31,6 +31,7 @@ import { appendSpot, getItinerary } from '@/lib/itinerary-store'
 import { useSpot } from '@/lib/api'
 import type { Spot as DbSpot } from '@/lib/api/spots'
 import { getImageUrl } from '@/lib/utils/image'
+import Loader from '@/components/ui/loader'
 
 function clampIndex(i: number, len: number) {
   return ((i % len) + len) % len
@@ -81,8 +82,8 @@ export default function SpotPage() {
   // Now we can handle loading and error states
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white text-lg">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
       </div>
     )
   }

@@ -8,6 +8,7 @@ import {
   Link as LinkIcon,
   Lock,
   LogOut,
+  SquareUser,
 } from 'lucide-react'
 import { BottomTabs } from '@/components/ui/bottom-tabs'
 import { useEffect, useState, Suspense } from 'react'
@@ -115,36 +116,34 @@ function ProfileContent() {
   if (!user) {
     return (
       <div className="min-h-screen bg-white">
-        <div className="mx-auto max-w-[430px] px-5 py-8">
-          <header className="flex items-center justify-between py-2">
-            <Link
-              aria-label="Go back"
-              href="/"
-              className="rounded-full p-1 hover:bg-gray-100"
-            >
-              <ArrowLeft className="h-6 w-6 text-gray-800" />
-            </Link>
-            <h1 className="text-xl font-bold text-gray-800">
-              Profile
+       <main className="mx-auto max-w-[430px] px-5 pb-28 pt-8 lg:max-w-7xl lg:px-8 xl:px-10">
+          <header className="mb-6">
+            <h1 className="text-4xl font-extrabold tracking-tight">
+              My Plans
             </h1>
-            <div className="w-6" />
+            <p className="text-base text-muted-foreground mt-1">
+              Manage your travel itineraries
+            </p>
           </header>
 
-          <div className="mt-8 rounded-xl border border-dashed p-8 text-center">
-            <h2 className="text-lg font-semibold mb-2">
+          <div className="text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              <SquareUser className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Sign in required
-            </h2>
-            <p className="text-gray-600 mb-4">
-              Please sign in to view your profile
+            </h3>
+            <p className="text-gray-500 mb-6">
+              Please sign in to view profile
             </p>
             <Link
               href="/auth/login"
-              className="inline-block rounded-full bg-teal-400 px-6 py-3 text-white font-semibold hover:bg-teal-500"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 text-white rounded-full hover:bg-teal-600 transition-colors"
             >
               Sign In
             </Link>
           </div>
-        </div>
+        </main>
         <BottomTabs />
       </div>
     )
