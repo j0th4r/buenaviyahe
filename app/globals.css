@@ -119,9 +119,28 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  /* PWA-optimized touch/overscroll behavior */
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    overscroll-behavior: none; /* stop pull-to-refresh / scroll chaining */
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-bai-jamjuree), system-ui, sans-serif;
+  }
+
+  /* Map container optimizations for gestures */
+  #map-root,
+  .map-container {
+    height: 100vh;
+    width: 100vw;
+    touch-action: none; /* give the map full control of gestures */
+    overscroll-behavior: none; /* prevent pointercancel during edge pulls */
+    -webkit-overflow-scrolling: auto;
   }
 
   /* Headers use Baloo 2 font */

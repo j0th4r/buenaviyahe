@@ -18,6 +18,12 @@ const baloo2 = Baloo_2({
   variable: '--font-baloo2',
 })
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover', // PWA optimization for better gesture handling
+}
+
 export const metadata: Metadata = {
   title: 'Buena Viyahe',
   description: 'Buena Viyahe - Explore Buenavista',

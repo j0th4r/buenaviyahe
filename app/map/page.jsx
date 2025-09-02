@@ -2,7 +2,6 @@
 
 import React, {
   useEffect,
-  useMemo,
   useRef,
   useState,
   useCallback,
@@ -15,7 +14,7 @@ import {
   InfoWindow,
   useMap,
 } from '@vis.gl/react-google-maps'
-import { Star, StarHalf, Crosshair } from 'lucide-react'
+import { Star, StarHalf, Crosshair, Plus, Minus } from 'lucide-react'
 import { BottomTabs } from '@/components/ui/bottom-tabs'
 import {
   Drawer,
@@ -29,6 +28,22 @@ import { getImageUrl } from '@/lib/utils/image'
 import Loader from '@/components/ui/loader'
 
 const defaultCenter = { lat: 8.9731834, lng: 125.4085344 }
+
+// Throttle helper for map events
+function rafThrottle(fn, ms) {
+  let ticking = false,
+    last = 0
+  return (...args) => {
+    const now = performance.now()
+    if (ticking || now - last < ms) return
+    last = now
+    ticking = true
+    requestAnimationFrame(() => {
+      fn(...args)
+      ticking = false
+    })
+  }
+}
 
 function MapReady({ onReady }) {
   const map = useMap()
@@ -51,6 +66,23 @@ export default function MapPage() {
   const [userLocation, setUserLocation] = useState(null)
   const mapRef = useRef(null)
 
+  // Use refs for tracking center/zoom without triggering re-renders
+  const centerRef = useRef(defaultCenter)
+  const zoomRef = useRef(12)
+
+  // Throttled handlers to update refs sparingly
+  const handleCenterChanged = useRef(
+    rafThrottle((e) => {
+      centerRef.current = e.detail.center
+    }, 100)
+  ).current
+
+  const handleZoomChanged = useRef(
+    rafThrottle((e) => {
+      zoomRef.current = e.detail.zoom
+    }, 100)
+  ).current
+
   // Get user's current location
   useEffect(() => {
     let cancelled = false
@@ -71,6 +103,7 @@ export default function MapPage() {
             }
             setCenter(location)
             setUserLocation(location)
+            centerRef.current = location
             setLocationLoading(false)
             console.log('User location found:', location)
           }
@@ -140,6 +173,23 @@ export default function MapPage() {
     setIsDrawerOpen(false)
   }, [])
 
+  // Optimized zoom functions that work directly with mapRef
+  const handleZoomIn = useCallback(() => {
+    if (!mapRef.current) return
+    const currentZoom = mapRef.current.getZoom() || 12
+    const newZoom = Math.min(currentZoom + 1, 20) // Max zoom level 20
+    mapRef.current.setZoom(newZoom)
+    zoomRef.current = newZoom
+  }, [])
+
+  const handleZoomOut = useCallback(() => {
+    if (!mapRef.current) return
+    const currentZoom = mapRef.current.getZoom() || 12
+    const newZoom = Math.max(currentZoom - 1, 1) // Min zoom level 1
+    mapRef.current.setZoom(newZoom)
+    zoomRef.current = newZoom
+  }, [])
+
   // Rating component
   const Rating = ({ value }) => {
     const full = Math.floor(value)
@@ -174,7 +224,6 @@ export default function MapPage() {
         </span>
         <BottomTabs />
       </div>
-      
     )
   }
 
@@ -198,16 +247,21 @@ export default function MapPage() {
     >
       <div className="relative h-screen w-full bg-gray-100">
         <Map
-          center={center}
-          zoom={zoom}
-          onCenterChanged={(e) => setCenter(e.detail.center)}
-          onZoomChanged={(e) => setZoom(e.detail.zoom)}
+          defaultCenter={center}
+          defaultZoom={zoom}
+          onCenterChanged={handleCenterChanged}
+          onZoomChanged={handleZoomChanged}
           mapId="6663354a9d71030a54d32b1a"
           gestureHandling="greedy"
           disableDefaultUI={true}
           mapTypeId={mapTypeId}
-          className="h-full w-full"
+          className="map-container"
           options={{
+            clickableIcons: false,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            zoomControl: false,
             styles: [
               {
                 featureType: 'poi',
@@ -254,11 +308,6 @@ export default function MapPage() {
                 stylers: [{ visibility: 'off' }],
               },
             ],
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: false,
-            zoomControl: false,
-            clickableIcons: false,
           }}
         >
           <MapReady onReady={(m) => (mapRef.current = m)} />
@@ -339,7 +388,11 @@ export default function MapPage() {
               Satellite
             </button>
           </div>
-          {userLocation && (
+        </div>
+
+        {/* User Location Button - Positioned below map type controls */}
+        {userLocation && (
+          <div className="absolute top-20 right-4 z-10">
             <button
               onClick={recenterOnUser}
               className="flex items-center justify-center w-10 h-10 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
@@ -347,7 +400,27 @@ export default function MapPage() {
             >
               <Crosshair className="w-5 h-5 text-gray-700" />
             </button>
-          )}
+          </div>
+        )}
+
+        {/* Zoom Controls - Positioned at bottom-right, same level as Discover button */}
+        <div className="absolute bottom-24 right-4 z-10">
+          <div className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden">
+            <button
+              onClick={handleZoomIn}
+              className="flex items-center justify-center w-10 h-10 hover:bg-gray-50 transition-colors border-b border-gray-200"
+              title="Zoom In"
+            >
+              <Plus className="w-5 h-5 text-gray-700" />
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="flex items-center justify-center w-10 h-10 hover:bg-gray-50 transition-colors"
+              title="Zoom Out"
+            >
+              <Minus className="w-5 h-5 text-gray-700" />
+            </button>
+          </div>
         </div>
 
         {/* Bottom Drawer */}

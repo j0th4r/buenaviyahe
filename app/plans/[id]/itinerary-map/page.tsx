@@ -18,6 +18,8 @@ import {
   StarHalf,
   ChevronUp,
   ChevronDown,
+  Plus,
+  Minus,
 } from 'lucide-react'
 import {
   APIProvider,
@@ -40,6 +42,22 @@ import { getImageUrl } from '@/lib/utils/image'
 
 // A default center, in case no spots are available
 const defaultCenter = { lat: 8.9731834, lng: 125.4085344 }
+
+// Throttle helper for map events
+function rafThrottle(fn: (...args: any[]) => void, ms: number) {
+  let ticking = false,
+    last = 0
+  return (...args: any[]) => {
+    const now = performance.now()
+    if (ticking || now - last < ms) return
+    last = now
+    ticking = true
+    requestAnimationFrame(() => {
+      fn(...args)
+      ticking = false
+    })
+  }
+}
 
 // This component will handle rendering multiple direction segments
 const Directions = ({
@@ -277,7 +295,7 @@ export default function ItineraryMapPage() {
   const [error, setError] = useState<string | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [mapTypeId, setMapTypeId] = useState<'roadmap' | 'satellite'>(
-    'satellite'
+    'satellite' // Start with roadmap for better performance
   )
   const [selectedSpot, setSelectedSpot] = useState<any | null>(null)
   const [center, setCenter] = useState(defaultCenter)
@@ -301,6 +319,23 @@ export default function ItineraryMapPage() {
   } | null>(null)
   const [locationLoading, setLocationLoading] = useState(true)
   const mapRef = useRef<google.maps.Map | null>(null)
+
+  // Use refs for tracking center/zoom without triggering re-renders
+  const centerRef = useRef(defaultCenter)
+  const zoomRef = useRef(12)
+
+  // Throttled handlers to update refs sparingly
+  const handleCenterChanged = useRef(
+    rafThrottle((e: any) => {
+      centerRef.current = e.detail.center
+    }, 100)
+  ).current
+
+  const handleZoomChanged = useRef(
+    rafThrottle((e: any) => {
+      zoomRef.current = e.detail.zoom
+    }, 100)
+  ).current
 
   const itineraryId = params.id as string
   const selectedDay = searchParams.get('day')
@@ -424,6 +459,23 @@ export default function ItineraryMapPage() {
     []
   )
 
+  // Optimized zoom functions that work directly with mapRef
+  const handleZoomIn = useCallback(() => {
+    if (!mapRef.current) return
+    const currentZoom = mapRef.current.getZoom() || 12
+    const newZoom = Math.min(currentZoom + 1, 20) // Max zoom level 20
+    mapRef.current.setZoom(newZoom)
+    zoomRef.current = newZoom
+  }, [])
+
+  const handleZoomOut = useCallback(() => {
+    if (!mapRef.current) return
+    const currentZoom = mapRef.current.getZoom() || 12
+    const newZoom = Math.max(currentZoom - 1, 1) // Min zoom level 1
+    mapRef.current.setZoom(newZoom)
+    zoomRef.current = newZoom
+  }, [])
+
   // Rating component
   const Rating = ({ value }: { value: number }) => {
     const full = Math.floor(value)
@@ -483,15 +535,16 @@ export default function ItineraryMapPage() {
     >
       <div className="relative h-screen w-full bg-gray-100">
         <Map
-          center={center}
-          zoom={zoom}
-          onCenterChanged={(e) => setCenter(e.detail.center)}
-          onZoomChanged={(e) => setZoom(e.detail.zoom)}
+          defaultCenter={mapCenter}
+          defaultZoom={zoom}
+          onCenterChanged={handleCenterChanged}
+          onZoomChanged={handleZoomChanged}
           mapId="6663354a9d71030a54d32b1a"
           gestureHandling={'greedy'}
           disableDefaultUI={true}
           mapTypeId={mapTypeId}
-          className="h-full w-full"
+          className="map-container"
+          clickableIcons={false}
         >
           <MapController
             onMapLoad={(map) => (mapRef.current = map)}
@@ -579,62 +632,26 @@ export default function ItineraryMapPage() {
                 Satellite
               </button>
             </div>
+          </div>
+        </div>
 
-            {/* Route Info Card */}
-            {/* {totalDistance && totalDuration && (spotsForSelectedDay.length > 1 || userLocation) && (
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="flex items-center justify-between p-3 pb-2">
-                  <div className="text-sm text-gray-600">Route Info</div>
-                  <button
-                    onClick={() => setIsRouteInfoMinimized(!isRouteInfoMinimized)}
-                    className="p-1 hover:bg-gray-100 rounded transition-colors"
-                  >
-                    {isRouteInfoMinimized ? (
-                      <ChevronDown className="w-4 h-4 text-gray-500" />
-                    ) : (
-                      <ChevronUp className="w-4 h-4 text-gray-500" />
-                    )}
-                  </button>
-                </div>
-                {!isRouteInfoMinimized && (
-                  <div className="px-3 pb-3">
-                    <div className="flex items-center space-x-4 mb-3">
-                      <div className="flex items-center space-x-1">
-                        <span className="text-lg font-bold text-gray-800">{totalDistance}</span>
-                        <span className="text-sm text-gray-500">total distance</span>
-                      </div>
-                      <div className="w-px h-6 bg-gray-300"></div>
-                      <div className="flex items-center space-x-1">
-                        <span className="text-lg font-bold text-gray-800">{totalDuration}</span>
-                        <span className="text-sm text-gray-500">total time</span>
-                      </div>
-                    </div>
-                    
-                  
-                    {routeSegments.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="text-xs font-medium text-gray-600 mb-2">Route Segments:</div>
-                        {routeSegments.map((segment, index) => (
-                          <div key={index} className="flex items-center justify-between text-sm bg-gray-50 rounded p-2">
-                            <div className="flex items-center space-x-2">
-                              <div 
-                                className="w-3 h-3 rounded-full" 
-                                style={{ backgroundColor: segment.color }}
-                              ></div>
-                              <span className="text-gray-700">{segment.from} → {segment.to}</span>
-                            </div>
-                            <div className="flex items-center space-x-3 text-xs text-gray-500">
-                              <span>{segment.distance}</span>
-                              <span>{segment.duration}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )} */}
+        {/* Zoom Controls - Positioned at bottom-right, same level as View Itinerary button */}
+        <div className="absolute bottom-8 right-4 z-10">
+          <div className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden">
+            <button
+              onClick={handleZoomIn}
+              className="flex items-center justify-center w-10 h-10 hover:bg-gray-50 transition-colors border-b border-gray-200"
+              title="Zoom In"
+            >
+              <Plus className="w-5 h-5 text-gray-700" />
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="flex items-center justify-center w-10 h-10 hover:bg-gray-50 transition-colors"
+              title="Zoom Out"
+            >
+              <Minus className="w-5 h-5 text-gray-700" />
+            </button>
           </div>
         </div>
 
@@ -648,7 +665,7 @@ export default function ItineraryMapPage() {
           <DrawerContent>
             <DrawerHeader>
               <DrawerTitle>
-                Day {selectedDay} - {itinerary.title}
+                Day {selectedDay} - {itinerary?.title || 'Itinerary'}
               </DrawerTitle>
               {totalDistance &&
                 totalDuration &&
