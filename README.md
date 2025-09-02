@@ -83,6 +83,7 @@ buenaviyahe/
 - npm or yarn
 - Supabase account
 - Google Maps API key
+- Google Gemini API key
 
 ### Environment Setup
 
@@ -110,15 +111,23 @@ buenaviyahe/
 
    # Google Maps API
    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+
+   # Gemini AI API (for chatbot)
+   GEMINI_API_KEY=your_gemini_api_key
    ```
 
-4. **Set up Supabase Database**
+4. **Set up API Keys**
+   - **Supabase**: Create a new Supabase project and get your URL and keys
+   - **Google Maps**: Get an API key from Google Cloud Console
+   - **Gemini AI**: Get an API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+
+5. **Set up Supabase Database**
    - Create a new Supabase project
    - Run the database migrations (see Database Schema section)
    - Configure Row Level Security policies
    - Set up storage buckets for images
 
-5. **Start the development server**
+6. **Start the development server**
 
    ```bash
    npm run dev

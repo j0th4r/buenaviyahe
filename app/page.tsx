@@ -12,6 +12,7 @@ import {
 import { getImageUrl } from '@/lib/utils/image'
 import { Suspense, useState, useEffect } from 'react'
 import { BottomTabs } from '@/components/ui/bottom-tabs'
+import { ChatbotWidget } from '@/components/chatbot-widget'
 
 // Custom hook to safely check if we're on the client
 function useIsClient() {
@@ -293,6 +294,7 @@ function PageContent() {
       </main>
 
       <BottomTabs />
+      <ChatbotWidget />
     </div>
   )
 }
