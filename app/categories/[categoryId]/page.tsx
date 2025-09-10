@@ -28,7 +28,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   } = useSpotsByCategory(resolvedParams.categoryId)
 
   const withForward = (href: string) => {
-    const url = new URL(href, 'http://dummy')
+    const url = new URL(href, 'https://buenaviyahe.com')
     if (append) url.searchParams.set('append', '1')
     if (day) url.searchParams.set('day', day)
     return url.pathname + (url.search ? url.search : '')

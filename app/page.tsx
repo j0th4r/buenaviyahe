@@ -45,7 +45,7 @@ function PageContent() {
     data: popularSpots,
     loading: spotsLoading,
     error: spotsError,
-  } = usePopularSpots(3)
+  } = usePopularSpots()
   const {
     data: categories,
     loading: categoriesLoading,
@@ -55,7 +55,7 @@ function PageContent() {
   const withForward = (href: string) => {
     // Always return the same structure on server and client
     // We'll handle the URL building consistently
-    const url = new URL(href, 'http://dummy')
+    const url = new URL(href, 'https://buenaviyahe.com')
     if (append) url.searchParams.set('append', '1')
     if (day) url.searchParams.set('day', day)
     return url.pathname + (url.search ? url.search : '')

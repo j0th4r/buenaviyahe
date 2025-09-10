@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
 
     // Initialize the model
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemma-3-27b-it',
     })
 
     // Create the prompt with context
