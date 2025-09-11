@@ -24,6 +24,7 @@ export interface Database {
           amenities: string[]
           lat: number | null
           lng: number | null
+          owner_id: string | null
           created_at: string
           updated_at: string
         }
@@ -41,6 +42,7 @@ export interface Database {
           amenities: string[]
           lat?: number | null
           lng?: number | null
+          owner_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -58,6 +60,7 @@ export interface Database {
           amenities?: string[]
           lat?: number | null
           lng?: number | null
+          owner_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -162,6 +165,7 @@ export interface Database {
           city: string
           website: string | null
           about: string
+          role: string
           joined_year: number
           contributions: number
           avatar_url: string | null
@@ -174,6 +178,7 @@ export interface Database {
           city: string
           website?: string | null
           about: string
+          role?: string
           joined_year?: number
           contributions?: number
           avatar_url?: string | null
@@ -186,6 +191,7 @@ export interface Database {
           city?: string
           website?: string | null
           about?: string
+          role?: string
           joined_year?: number
           contributions?: number
           avatar_url?: string | null
