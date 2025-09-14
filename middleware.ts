@@ -55,7 +55,34 @@ export async function middleware(request: NextRequest) {
   )
 
   // This will refresh session if expired - required for Server Components
-  await supabase.auth.getUser()
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser()
+
+  // Check if trying to access admin routes
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    // If no user or auth error, redirect to login
+    if (error || !user) {
+      const loginUrl = new URL('/auth/login', request.url)
+      loginUrl.searchParams.set('redirect', request.nextUrl.pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+
+    // Check user role for admin access
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    // If user doesn't have admin role, redirect with error
+    if (!profile || profile.role !== 'admin') {
+      const homeUrl = new URL('/', request.url)
+      homeUrl.searchParams.set('error', 'unauthorized')
+      return NextResponse.redirect(homeUrl)
+    }
+  }
 
   return response
 }

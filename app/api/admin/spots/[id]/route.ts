@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/config'
+import { requireAdminAPI } from '@/lib/auth/admin'
 import { z } from 'zod'
 
 const updateSpotSchema = z.object({
@@ -33,6 +34,8 @@ export async function GET(
   { params }: RouteParams
 ) {
   try {
+    // Check admin authentication
+    await requireAdminAPI(request)
     const supabase = createServiceClient()
 
     const { data: spot, error } = await supabase
@@ -59,6 +62,23 @@ export async function GET(
     return NextResponse.json(spot)
   } catch (error) {
     console.error('Error in GET /api/admin/spots/[id]:', error)
+
+    // Handle authentication errors
+    if (error instanceof Error) {
+      if (error.message === 'Authentication required') {
+        return NextResponse.json(
+          { error: 'Authentication required' },
+          { status: 401 }
+        )
+      }
+      if (error.message === 'Admin privileges required') {
+        return NextResponse.json(
+          { error: 'Admin privileges required' },
+          { status: 403 }
+        )
+      }
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -71,6 +91,8 @@ export async function PATCH(
   { params }: RouteParams
 ) {
   try {
+    // Check admin authentication
+    await requireAdminAPI(request)
     const supabase = createServiceClient()
     const body = await request.json()
 
@@ -80,7 +102,10 @@ export async function PATCH(
     // Prevent slug changes since slug is used as ID
     if (validatedData.slug && validatedData.slug !== params.id) {
       return NextResponse.json(
-        { error: 'Cannot change slug - it is used as the record ID. Create a new listing instead.' },
+        {
+          error:
+            'Cannot change slug - it is used as the record ID. Create a new listing instead.',
+        },
         { status: 400 }
       )
     }
@@ -115,6 +140,22 @@ export async function PATCH(
   } catch (error) {
     console.error('Error in PATCH /api/admin/spots/[id]:', error)
 
+    // Handle authentication errors
+    if (error instanceof Error) {
+      if (error.message === 'Authentication required') {
+        return NextResponse.json(
+          { error: 'Authentication required' },
+          { status: 401 }
+        )
+      }
+      if (error.message === 'Admin privileges required') {
+        return NextResponse.json(
+          { error: 'Admin privileges required' },
+          { status: 403 }
+        )
+      }
+    }
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid input', details: error },
@@ -134,6 +175,8 @@ export async function DELETE(
   { params }: RouteParams
 ) {
   try {
+    // Check admin authentication
+    await requireAdminAPI(request)
     const supabase = createServiceClient()
 
     // Delete the spot
@@ -153,6 +196,23 @@ export async function DELETE(
     return new NextResponse(null, { status: 204 })
   } catch (error) {
     console.error('Error in DELETE /api/admin/spots/[id]:', error)
+
+    // Handle authentication errors
+    if (error instanceof Error) {
+      if (error.message === 'Authentication required') {
+        return NextResponse.json(
+          { error: 'Authentication required' },
+          { status: 401 }
+        )
+      }
+      if (error.message === 'Admin privileges required') {
+        return NextResponse.json(
+          { error: 'Admin privileges required' },
+          { status: 403 }
+        )
+      }
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

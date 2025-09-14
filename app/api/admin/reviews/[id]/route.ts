@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/config'
+import { requireAdminAPI } from '@/lib/auth/admin'
 import { z } from 'zod'
 
 const respondToReviewSchema = z.object({
@@ -17,6 +18,8 @@ export async function POST(
   { params }: RouteParams
 ) {
   try {
+    // Check admin authentication
+    await requireAdminAPI(request)
     const supabase = createServiceClient()
     const body = await request.json()
 
@@ -55,9 +58,25 @@ export async function POST(
   } catch (error) {
     console.error('Error in POST /api/admin/reviews/[id]:', error)
 
+    // Handle authentication errors
+    if (error instanceof Error) {
+      if (error.message === 'Authentication required') {
+        return NextResponse.json(
+          { error: 'Authentication required' },
+          { status: 401 }
+        )
+      }
+      if (error.message === 'Admin privileges required') {
+        return NextResponse.json(
+          { error: 'Admin privileges required' },
+          { status: 403 }
+        )
+      }
+    }
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid input', details: error.errors },
+        { error: 'Invalid input', details: error.issues },
         { status: 400 }
       )
     }
@@ -74,6 +93,8 @@ export async function DELETE(
   { params }: RouteParams
 ) {
   try {
+    // Check admin authentication
+    await requireAdminAPI(request)
     const supabase = createServiceClient()
 
     // Delete the review (admin only)
@@ -93,6 +114,23 @@ export async function DELETE(
     return new NextResponse(null, { status: 204 })
   } catch (error) {
     console.error('Error in DELETE /api/admin/reviews/[id]:', error)
+
+    // Handle authentication errors
+    if (error instanceof Error) {
+      if (error.message === 'Authentication required') {
+        return NextResponse.json(
+          { error: 'Authentication required' },
+          { status: 401 }
+        )
+      }
+      if (error.message === 'Admin privileges required') {
+        return NextResponse.json(
+          { error: 'Admin privileges required' },
+          { status: 403 }
+        )
+      }
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

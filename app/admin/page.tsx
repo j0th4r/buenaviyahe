@@ -1,304 +1,365 @@
 import { requireAdmin } from '@/lib/auth/admin'
-import { AdminLayout } from '@/components/admin/admin-layout'
+import { LguAdminSidebar } from '@/components/admin/lgu-admin-sidebar'
+import { AdminHeader } from '@/components/admin/admin-header'
+import { LguMetricsCards } from '@/components/admin/lgu-metrics-cards'
+import { TourismActivityChart } from '@/components/admin/tourism-activity-chart'
+import { LguSpotsTable } from '@/components/admin/lgu-spots-table'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
-  MapPin,
-  MessageSquare,
-  Star,
-  TrendingUp,
-  Users,
-  Eye,
-} from 'lucide-react'
+  SidebarInset,
+  SidebarProvider,
+} from '@/components/ui/sidebar'
 import { createServiceClient } from '@/lib/supabase/config'
+import {
+  SpotSubmission,
+  LguDashboardData,
+  RecentActivity,
+} from '@/types/admin'
 
-async function getDashboardStats() {
+async function getRecentActivities(
+  supabase: any
+): Promise<RecentActivity[]> {
+  try {
+    const activities: RecentActivity[] = []
+
+    // Get recent business registrations
+    const { data: recentBusinesses } = await supabase
+      .from('profiles')
+      .select('name, created_at')
+      .eq('role', 'business_owner')
+      .order('created_at', { ascending: false })
+      .limit(3)
+
+    recentBusinesses?.forEach((business: any) => {
+      activities.push({
+        type: 'business_registration',
+        message: `New business "${business.name}" registered`,
+        timestamp: business.created_at,
+      })
+    })
+
+    // Get recent spot approvals
+    const { data: recentApprovals } = await supabase
+      .from('spots')
+      .select('title, updated_at, status')
+      .eq('status', 'approved')
+      .order('updated_at', { ascending: false })
+      .limit(3)
+
+    recentApprovals?.forEach((spot: any) => {
+      activities.push({
+        type: 'spot_approval',
+        message: `Spot "${spot.title}" approved`,
+        timestamp: spot.updated_at,
+      })
+    })
+
+    // Get recent user registrations
+    const { data: recentUsers } = await supabase
+      .from('profiles')
+      .select('name, created_at')
+      .eq('role', 'user')
+      .order('created_at', { ascending: false })
+      .limit(2)
+
+    recentUsers?.forEach((user: any) => {
+      activities.push({
+        type: 'user_registration',
+        message: `New user "${user.name}" joined`,
+        timestamp: user.created_at,
+      })
+    })
+
+    // Sort all activities by timestamp
+    return activities
+      .sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() -
+          new Date(a.timestamp).getTime()
+      )
+      .slice(0, 5)
+  } catch (error) {
+    console.error('Error fetching recent activities:', error)
+    return []
+  }
+}
+
+async function getLGUDashboardData(): Promise<LguDashboardData> {
   const supabase = createServiceClient()
 
   try {
+    // Get business owner count
+    const { count: businessOwnersCount } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'business_owner')
+
+    // Get regular users count
+    const { count: regularUsersCount } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'user')
+
     // Get total spots count
-    const { count: spotsCount } = await supabase
+    const { count: totalSpots } = await supabase
       .from('spots')
       .select('*', { count: 'exact', head: true })
 
-    // Get total reviews count and average rating
-    const { data: reviewsData } = await supabase
-      .from('reviews')
-      .select('rating')
+    // Get spot counts by status for real approval metrics
+    const { count: pendingSpotsCount } = await supabase
+      .from('spots')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending')
 
-    const totalReviews = reviewsData?.length || 0
-    const avgRating = reviewsData?.length
-      ? reviewsData.reduce((acc, r) => acc + (r.rating || 0), 0) /
-        reviewsData.length
-      : 0
+    const { count: approvedSpotsCount } = await supabase
+      .from('spots')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'approved')
 
-    // Get recent reviews (last 7 days)
-    const weekAgo = new Date(
-      Date.now() - 7 * 24 * 60 * 60 * 1000
+    const { count: rejectedSpotsCount } = await supabase
+      .from('spots')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'rejected')
+
+    // Get recent business registrations (last 30 days)
+    const thirtyDaysAgo = new Date(
+      Date.now() - 30 * 24 * 60 * 60 * 1000
     ).toISOString()
-    const { count: recentReviews } = await supabase
-      .from('reviews')
+    const { count: recentBusinessRegistrations } = await supabase
+      .from('profiles')
       .select('*', { count: 'exact', head: true })
-      .gte('created_at', weekAgo)
+      .eq('role', 'business_owner')
+      .gte('created_at', thirtyDaysAgo)
 
-    // Get top-rated spots
-    const { data: topSpots } = await supabase
+    // Get recent spot submissions for the table (ordered by submission date)
+    const { data: recentSpots, error: spotsError } = await supabase
       .from('spots')
-      .select('id, title, rating, reviews')
-      .order('rating', { ascending: false })
-      .limit(5)
+      .select(
+        `
+        id, 
+        title, 
+        location, 
+        created_at, 
+        submitted_at,
+        updated_at,
+        owner_id,
+        description,
+        status,
+        profiles!spots_owner_id_fkey(name)
+      `
+      )
+      .not('owner_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    if (spotsError) {
+      console.error('Error fetching recent spots:', spotsError)
+    }
+
+    // Transform spots data for the table
+    const spotsWithStatus: SpotSubmission[] = (recentSpots || []).map(
+      (spot) => ({
+        id: spot.id,
+        title: spot.title,
+        location: spot.location,
+        status: spot.status || 'pending', // Use actual status from DB
+        submittedAt: spot.submitted_at || spot.created_at,
+        submittedBy: (spot.profiles as any)?.name || 'Unknown',
+        description: spot.description || '',
+      })
+    )
+
+    // Get recent activities for the dashboard
+    const recentActivities = await getRecentActivities(supabase)
 
     return {
-      spotsCount: spotsCount || 0,
-      totalReviews,
-      avgRating: Math.round(avgRating * 10) / 10,
-      recentReviews: recentReviews || 0,
-      topSpots: topSpots || [],
+      stats: {
+        businessOwnersCount: businessOwnersCount || 0,
+        regularUsersCount: regularUsersCount || 0,
+        totalSpots: totalSpots || 0,
+        pendingSpotsCount: pendingSpotsCount || 0,
+        approvedSpotsCount: approvedSpotsCount || 0,
+        rejectedSpotsCount: rejectedSpotsCount || 0,
+        recentBusinessRegistrations: recentBusinessRegistrations || 0,
+      },
+      spotsData: spotsWithStatus,
+      recentActivities,
     }
   } catch (error) {
-    console.error('Error fetching dashboard stats:', error)
+    console.error('Error fetching LGU dashboard data:', error)
     return {
-      spotsCount: 0,
-      totalReviews: 0,
-      avgRating: 0,
-      recentReviews: 0,
-      topSpots: [],
+      stats: {
+        businessOwnersCount: 0,
+        regularUsersCount: 0,
+        totalSpots: 0,
+        pendingSpotsCount: 0,
+        approvedSpotsCount: 0,
+        rejectedSpotsCount: 0,
+        recentBusinessRegistrations: 0,
+      },
+      spotsData: [],
+      recentActivities: [],
     }
   }
 }
 
-export default async function AdminDashboard() {
-  const user = await requireAdmin()
-  const stats = await getDashboardStats()
+function formatRelativeTime(timestamp: string) {
+  const now = new Date()
+  const past = new Date(timestamp)
+  const diffMs = now.getTime() - past.getTime()
+
+  const diffMinutes = Math.floor(diffMs / (1000 * 60))
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+  if (diffMinutes < 60) {
+    return `${diffMinutes}m ago`
+  } else if (diffHours < 24) {
+    return `${diffHours}h ago`
+  } else {
+    return `${diffDays}d ago`
+  }
+}
+
+export default async function LGUAdminDashboard() {
+  const adminUser = await requireAdmin()
+  const { stats, spotsData, recentActivities } =
+    await getLGUDashboardData()
+
+  // Transform admin user data for sidebar
+  const sidebarUser = {
+    name: adminUser.profile.name,
+    email: adminUser.email,
+    avatar: adminUser.profile.avatar_url || '/placeholder-user.jpg',
+  }
 
   return (
-    <AdminLayout user={user}>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-teal-950">
-              Total Listings
-            </CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground text-teal-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.spotsCount}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Active tourist spots
-            </p>
-          </CardContent>
-        </Card>
+    <SidebarProvider
+      style={
+        {
+          '--sidebar-width': 'calc(var(--spacing) * 72)',
+          '--header-height': 'calc(var(--spacing) * 16)',
+        } as React.CSSProperties
+      }
+    >
+      <LguAdminSidebar variant="inset" user={sidebarUser} />
+      <SidebarInset>
+        <AdminHeader
+          title="Local Government Unit Admin"
+          subtitle="Tourism Management System"
+        />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              {/* Metrics Cards */}
+              <LguMetricsCards stats={stats} />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-teal-950">
-              Total Reviews
-            </CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground text-teal-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.totalReviews}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              +{stats.recentReviews} this week
-            </p>
-          </CardContent>
-        </Card>
+              {/* Tourism Activity Chart */}
+              <div className="px-4 lg:px-6">
+                <TourismActivityChart />
+              </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-teal-950">
-              Average Rating
-            </CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground text-teal-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.avgRating}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Out of 5 stars
-            </p>
-          </CardContent>
-        </Card>
+              {/* Spots Table */}
+              <div className="px-4 lg:px-6">
+                <LguSpotsTable data={spotsData} />
+              </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-teal-950">
-              Response Rate
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground text-teal-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">87%</div>
-            <p className="text-xs text-muted-foreground">
-              Review responses
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle className="text-teal-950">
-              Top Performing Spots
-            </CardTitle>
-            <CardDescription>
-              Your highest-rated tourist destinations
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {stats.topSpots.map((spot, index) => (
-                <div
-                  key={spot.id}
-                  className="flex items-center gap-4"
-                >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-500 text-primary-foreground text-sm font-medium">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {spot.title}
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Star className="h-3 w-3 fill-current text-yellow-400" />
-                      <span>{spot.rating}</span>
-                      <span>•</span>
-                      <span>{spot.reviews} reviews</span>
+              {/* Additional Quick Actions Section */}
+              <div className="px-4 lg:px-6">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="rounded-lg border p-6">
+                    <h3 className="font-semibold text-teal-950 mb-2">
+                      Approval Overview
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-teal-950">
+                          Approved Spots
+                        </span>
+                        <span className="font-medium text-green-600">
+                          {stats.approvedSpotsCount}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-teal-950">
+                          Pending Review
+                        </span>
+                        <span
+                          className={`font-medium ${stats.pendingSpotsCount > 0 ? 'text-orange-600' : 'text-green-600'}`}
+                        >
+                          {stats.pendingSpotsCount}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-teal-950">
+                          Approval Rate
+                        </span>
+                        <span className="font-medium text-green-600">
+                          {stats.totalSpots > 0
+                            ? Math.round(
+                                (stats.approvedSpotsCount /
+                                  stats.totalSpots) *
+                                  100
+                              )
+                            : 0}
+                          %
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <Badge variant="secondary">{spot.rating} ⭐</Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle className="text-teal-950">
-              Quick Actions
-            </CardTitle>
-            <CardDescription>Common management tasks</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid gap-3">
-              <a
-                href="/admin/listings/new"
-                className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted transition-colors"
-              >
-                <MapPin className="h-4 w-4 text-muted-foreground text-teal-600" />
-                <div>
-                  <p className="text-sm font-medium text-teal-950">
-                    Add New Listing
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Create a new tourist spot
-                  </p>
-                </div>
-              </a>
+                  <div className="rounded-lg border p-6">
+                    <h3 className="font-semibold text-blue-950 mb-2">
+                      Recent Activity
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      {recentActivities.length > 0 ? (
+                        recentActivities.map((activity, index) => (
+                          <div key={index} className="text-teal-950">
+                            • {activity.message} (
+                            {formatRelativeTime(activity.timestamp)})
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-teal-950">
+                          • No recent activity to display
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-              <a
-                href="/admin/reviews"
-                className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted transition-colors"
-              >
-                <MessageSquare className="h-4 w-4 text-muted-foreground text-teal-600" />
-                <div>
-                  <p className="text-sm font-medium text-teal-950">
-                    Manage Reviews
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Respond to customer feedback
-                  </p>
-                </div>
-              </a>
-
-              {/* <a
-                href="/admin/upload"
-                className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted transition-colors"
-              >
-                <Eye className="h-4 w-4 text-muted-foreground text-teal-600" />
-                <div>
-                  <p className="text-sm font-medium text-teal-950">
-                    Upload Photos
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Add new images to listings
-                  </p>
-                </div>
-              </a> */}
-
-              <a
-                href="/admin/analytics"
-                className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted transition-colors"
-              >
-                <TrendingUp className="h-4 w-4 text-muted-foreground text-teal-600" />
-                <div>
-                  <p className="text-sm font-medium text-teal-950">
-                    View Analytics
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Performance insights
-                  </p>
-                </div>
-              </a>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              Latest updates and changes
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="h-2 w-2 rounded-full bg-blue-500 mt-2" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm">New review received</p>
-                  <p className="text-xs text-muted-foreground">
-                    2 hours ago
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="h-2 w-2 rounded-full bg-green-500 mt-2" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm">Listing updated</p>
-                  <p className="text-xs text-muted-foreground">
-                    1 day ago
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="h-2 w-2 rounded-full bg-orange-500 mt-2" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm">Photos uploaded</p>
-                  <p className="text-xs text-muted-foreground">
-                    3 days ago
-                  </p>
+                  <div className="rounded-lg border p-6">
+                    <h3 className="font-semibold text-green-950 mb-2">
+                      Quick Actions
+                    </h3>
+                    <div className="space-y-2">
+                      <a
+                        href="/admin/business-registration"
+                        className="block text-sm text-teal-950 hover:text-teal-600 hover:underline"
+                      >
+                        → Register New Business
+                      </a>
+                      <a
+                        href="/admin/spot-approvals"
+                        className="block text-sm text-teal-950 hover:text-teal-600 hover:underline"
+                      >
+                        → Review Pending Spots{' '}
+                        {stats.pendingSpotsCount > 0 &&
+                          `(${stats.pendingSpotsCount})`}
+                      </a>
+                      <a
+                        href="/admin/user-management"
+                        className="block text-sm text-teal-950 hover:text-teal-600 hover:underline"
+                      >
+                        → Manage User Roles
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </AdminLayout>
+          </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
+import { getImageUrl } from '@/lib/utils/image'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -658,7 +659,11 @@ export function ListingForm({
                       className="flex items-center gap-2 p-2 border rounded"
                     >
                       <img
-                        src={image}
+                        src={getImageUrl(image, {
+                          width: 40,
+                          height: 40,
+                          quality: 80,
+                        })}
                         alt={`Image ${index + 1}`}
                         className="h-10 w-10 rounded object-cover"
                       />

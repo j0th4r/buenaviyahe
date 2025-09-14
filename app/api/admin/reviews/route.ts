@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/config'
+import { requireAdminAPI } from '@/lib/auth/admin'
 
 export async function GET(request: NextRequest) {
   try {
+    // Check admin authentication
+    await requireAdminAPI(request)
     const supabase = createServiceClient()
     const { searchParams } = new URL(request.url)
     const filter = searchParams.get('filter') // 'pending', 'responded', 'all'
@@ -49,6 +52,23 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(reviews || [])
   } catch (error) {
     console.error('Error in GET /api/admin/reviews:', error)
+
+    // Handle authentication errors
+    if (error instanceof Error) {
+      if (error.message === 'Authentication required') {
+        return NextResponse.json(
+          { error: 'Authentication required' },
+          { status: 401 }
+        )
+      }
+      if (error.message === 'Admin privileges required') {
+        return NextResponse.json(
+          { error: 'Admin privileges required' },
+          { status: 403 }
+        )
+      }
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

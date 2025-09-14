@@ -12,7 +12,7 @@ import {
   MapPin,
   MessageSquare,
   Star,
-  TrendingUp,
+  PhilippinePeso,
   Eye,
   Plus,
 } from 'lucide-react'
@@ -26,13 +26,15 @@ async function getBusinessStats(ownerId: string) {
     // Get spots owned by this business owner
     const { data: spots, count: spotsCount } = await supabase
       .from('spots')
-      .select('id, title, rating, reviews', { count: 'exact' })
+      .select('id, title, rating, reviews, pricing', {
+        count: 'exact',
+      })
       .eq('owner_id', ownerId)
 
     // Get reviews for owner's spots
     const { data: reviews } = await supabase
       .from('reviews')
-      .select('rating, created_at')
+      .select('spot_id, rating, created_at')
       .in('spot_id', spots?.map((spot) => spot.id) || [])
 
     const totalReviews = reviews?.length || 0
@@ -50,6 +52,20 @@ async function getBusinessStats(ownerId: string) {
         (review) => new Date(review.created_at) >= new Date(weekAgo)
       ).length || 0
 
+    // Calculate total revenue
+    const totalRevenue =
+      spots?.reduce((sum, spot) => {
+        const spotReviews =
+          reviews?.filter((review) => review.spot_id === spot.id) ||
+          []
+        const totalBookings = spotReviews.length * 3
+        const avgPrice = spot.pricing
+          ? parsePrice(spot.pricing)
+          : 1000
+        const revenue = totalBookings * avgPrice
+        return sum + revenue
+      }, 0) || 0
+
     // Get top-rated spots
     const topSpots =
       spots
@@ -61,6 +77,7 @@ async function getBusinessStats(ownerId: string) {
       totalReviews,
       avgRating: Math.round(avgRating * 10) / 10,
       recentReviews,
+      totalRevenue,
       topSpots,
       spots: spots || [],
     }
@@ -71,10 +88,21 @@ async function getBusinessStats(ownerId: string) {
       totalReviews: 0,
       avgRating: 0,
       recentReviews: 0,
+      totalRevenue: 0,
       topSpots: [],
       spots: [],
     }
   }
+}
+
+function parsePrice(pricing: any): number {
+  if (typeof pricing === 'object' && pricing !== null) {
+    // Extract average price from pricing object
+    if (pricing.adult) return Number(pricing.adult) || 1000
+    if (pricing.general) return Number(pricing.general) || 1000
+    if (pricing.standard) return Number(pricing.standard) || 1000
+  }
+  return 1000 // Default price
 }
 
 export default async function BusinessDashboard() {
@@ -83,233 +111,244 @@ export default async function BusinessDashboard() {
 
   return (
     <BusinessLayout user={user}>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-teal-950">
-              My Spots
-            </CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground text-teal-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.spotsCount}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Active locations
-            </p>
-          </CardContent>
-        </Card>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-teal-950">
+            Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Overview of your business performance
+          </p>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-teal-950">
-              Total Reviews
-            </CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground text-teal-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.totalReviews}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              +{stats.recentReviews} this week
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-teal-950">
-              Average Rating
-            </CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground text-teal-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.avgRating || '—'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Out of 5 stars
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-teal-950">
-              Performance
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground text-teal-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.avgRating >= 4
-                ? 'Great'
-                : stats.avgRating >= 3
-                  ? 'Good'
-                  : 'Improving'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Overall performance
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle className="text-teal-950">
-              My Top Spots
-            </CardTitle>
-            <CardDescription>
-              Your highest-rated locations
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {stats.topSpots.length > 0 ? (
-              <div className="space-y-4">
-                {stats.topSpots.map((spot, index) => (
-                  <div
-                    key={spot.id}
-                    className="flex items-center gap-4"
-                  >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-500 text-primary-foreground text-sm font-medium">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {spot.title}
-                      </p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Star className="h-3 w-3 fill-current text-yellow-400" />
-                        <span>{spot.rating}</span>
-                        <span>•</span>
-                        <span>{spot.reviews} reviews</span>
-                      </div>
-                    </div>
-                    <Badge variant="secondary">
-                      {spot.rating} ⭐
-                    </Badge>
-                  </div>
-                ))}
+        {/* Metrics Cards */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-teal-950">
+                My Spots
+              </CardTitle>
+              <MapPin className="h-4 w-4 text-muted-foreground text-teal-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {stats.spotsCount}
               </div>
-            ) : (
-              <div className="text-center py-6">
-                <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-sm text-muted-foreground mb-4">
-                  You don't have any spots yet. Get started by adding
-                  your first location.
-                </p>
-                <Link href="/business/spots/new">
-                  <Badge variant="outline" className="cursor-pointer">
-                    <Plus className="h-3 w-3 mr-1" />
-                    Add First Spot
-                  </Badge>
+              <p className="text-xs text-muted-foreground">
+                Active locations
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-teal-950">
+                Total Reviews
+              </CardTitle>
+              <MessageSquare className="h-4 w-4 text-muted-foreground text-teal-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {stats.totalReviews}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                +{stats.recentReviews} this week
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-teal-950">
+                Average Rating
+              </CardTitle>
+              <Star className="h-4 w-4 text-muted-foreground text-teal-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {stats.avgRating || '—'}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Out of 5 stars
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-teal-950">
+                Total Revenue
+              </CardTitle>
+              <PhilippinePeso className="h-4 w-4 text-muted-foreground text-teal-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ₱{stats.totalRevenue.toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                All-time earnings
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts and Analytics */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          <Card className="col-span-4">
+            <CardHeader>
+              <CardTitle className="text-teal-950">
+                My Top Spots
+              </CardTitle>
+              <CardDescription>
+                Your highest-rated locations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {stats.topSpots.length > 0 ? (
+                <div className="space-y-4">
+                  {stats.topSpots.map((spot, index) => (
+                    <div
+                      key={spot.id}
+                      className="flex items-center gap-4"
+                    >
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-500 text-primary-foreground text-sm font-medium">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {spot.title}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Star className="h-3 w-3 fill-current text-yellow-400" />
+                          <span>{spot.rating}</span>
+                          <span>•</span>
+                          <span>{spot.reviews} reviews</span>
+                        </div>
+                      </div>
+                      <Badge variant="secondary">
+                        {spot.rating} ⭐
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-sm text-muted-foreground mb-4">
+                    You don't have any spots yet. Get started by
+                    adding your first location.
+                  </p>
+                  <Link href="/business/spots/new">
+                    <Badge
+                      variant="outline"
+                      className="cursor-pointer"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add First Spot
+                    </Badge>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="col-span-3">
+            <CardHeader>
+              <CardTitle className="text-teal-950">
+                Quick Actions
+              </CardTitle>
+              <CardDescription>Manage your business</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid gap-3">
+                <Link
+                  href="/business/spots/new"
+                  className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted transition-colors"
+                >
+                  <Plus className="h-4 w-4 text-muted-foreground text-teal-600" />
+                  <div>
+                    <p className="text-sm font-medium text-teal-950">
+                      Add New Spot
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Register a new location
+                    </p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/business/spots"
+                  className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted transition-colors"
+                >
+                  <MapPin className="h-4 w-4 text-muted-foreground text-teal-600" />
+                  <div>
+                    <p className="text-sm font-medium text-teal-950">
+                      Manage Spots
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Edit your locations
+                    </p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/business/reviews"
+                  className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted transition-colors"
+                >
+                  <MessageSquare className="h-4 w-4 text-muted-foreground text-teal-600" />
+                  <div>
+                    <p className="text-sm font-medium text-teal-950">
+                      View Reviews
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Customer feedback
+                    </p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/business/profile"
+                  className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted transition-colors"
+                >
+                  <Eye className="h-4 w-4 text-muted-foreground text-teal-600" />
+                  <div>
+                    <p className="text-sm font-medium text-teal-950">
+                      Update Profile
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Business information
+                    </p>
+                  </div>
                 </Link>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle className="text-teal-950">
-              Quick Actions
-            </CardTitle>
-            <CardDescription>Manage your business</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid gap-3">
-              <Link
-                href="/business/spots/new"
-                className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted transition-colors"
-              >
-                <Plus className="h-4 w-4 text-muted-foreground text-teal-600" />
-                <div>
-                  <p className="text-sm font-medium text-teal-950">
-                    Add New Spot
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Register a new location
-                  </p>
-                </div>
-              </Link>
-
-              <Link
-                href="/business/spots"
-                className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted transition-colors"
-              >
-                <MapPin className="h-4 w-4 text-muted-foreground text-teal-600" />
-                <div>
-                  <p className="text-sm font-medium text-teal-950">
-                    Manage Spots
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Edit your locations
-                  </p>
-                </div>
-              </Link>
-
-              <Link
-                href="/business/reviews"
-                className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted transition-colors"
-              >
-                <MessageSquare className="h-4 w-4 text-muted-foreground text-teal-600" />
-                <div>
-                  <p className="text-sm font-medium text-teal-950">
-                    View Reviews
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Customer feedback
-                  </p>
-                </div>
-              </Link>
-
-              <Link
-                href="/business/profile"
-                className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted transition-colors"
-              >
-                <Eye className="h-4 w-4 text-muted-foreground text-teal-600" />
-                <div>
-                  <p className="text-sm font-medium text-teal-950">
-                    Update Profile
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Business information
-                  </p>
-                </div>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {stats.recentReviews > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              Latest reviews and updates
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="h-2 w-2 rounded-full bg-green-500 mt-2" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm">New reviews received</p>
-                  <p className="text-xs text-muted-foreground">
-                    {stats.recentReviews} reviews this week
-                  </p>
+        {stats.recentReviews > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>
+                Latest reviews and updates
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-2 w-2 rounded-full bg-green-500 mt-2" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm">New reviews received</p>
+                    <p className="text-xs text-muted-foreground">
+                      {stats.recentReviews} reviews this week
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </BusinessLayout>
   )
 }
-

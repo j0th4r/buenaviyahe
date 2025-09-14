@@ -8,10 +8,10 @@ import {
 } from '@/components/ui/avatar'
 import {
   LayoutDashboard,
-  MapPin,
-  MessageSquare,
-  BarChart3,
-  Upload,
+  UserPlus,
+  Users,
+  CheckCircle,
+  Building2,
   LogOut,
   Menu,
 } from 'lucide-react'
@@ -29,10 +29,26 @@ interface AdminLayoutProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { name: 'Listings', href: '/admin/listings', icon: MapPin },
-  { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare },
-  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-  // { name: 'Upload', href: '/admin/upload', icon: Upload },
+  {
+    name: 'Business Registration',
+    href: '/admin/business-registration',
+    icon: UserPlus,
+  },
+  {
+    name: 'User Management',
+    href: '/admin/user-management',
+    icon: Users,
+  },
+  {
+    name: 'Spot Approvals',
+    href: '/admin/spot-approvals',
+    icon: CheckCircle,
+  },
+  {
+    name: 'Business Details',
+    href: '/admin/business-details',
+    icon: Building2,
+  },
 ]
 
 function NavigationItems() {
@@ -63,6 +79,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
               href="/admin"
               className="flex items-center gap-2 font-semibold text-teal-50"
             >
+              <Building2 className="h-5 w-5" />
               <span>LGU Admin</span>
             </Link>
           </div>
@@ -120,10 +137,10 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
               <nav className="grid gap-2 text-lg font-medium">
                 <Link
                   href="/admin"
-                  className="flex items-center gap-2 text-lg font-semibold mb-6"
+                  className="flex items-center gap-2 text-lg font-semibold mb-6 text-teal-50"
                 >
-                  <MapPin className="h-6 w-6" />
-                  <span>Buena Viyahe Admin</span>
+                  <Building2 className="h-6 w-6" />
+                  <span>LGU Admin</span>
                 </Link>
                 <NavigationItems />
               </nav>

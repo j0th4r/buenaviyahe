@@ -7,8 +7,8 @@ export default async function NewBusinessSpot() {
 
   return (
     <BusinessLayout user={user}>
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
+      <div className="space-y-6">
+        <div>
           <h1 className="text-2xl font-bold text-teal-950">
             Add New Spot
           </h1>
@@ -17,9 +17,10 @@ export default async function NewBusinessSpot() {
           </p>
         </div>
 
-        <BusinessSpotForm ownerId={user.id} />
+        <div className="max-w-4xl">
+          <BusinessSpotForm ownerId={user.id} />
+        </div>
       </div>
     </BusinessLayout>
   )
 }
-

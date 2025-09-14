@@ -25,6 +25,8 @@ export interface Database {
           lat: number | null
           lng: number | null
           owner_id: string | null
+          status: 'pending' | 'approved' | 'rejected'
+          submitted_at: string | null
           created_at: string
           updated_at: string
         }
@@ -43,6 +45,8 @@ export interface Database {
           lat?: number | null
           lng?: number | null
           owner_id?: string | null
+          status?: 'pending' | 'approved' | 'rejected'
+          submitted_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -61,6 +65,8 @@ export interface Database {
           lat?: number | null
           lng?: number | null
           owner_id?: string | null
+          status?: 'pending' | 'approved' | 'rejected'
+          submitted_at?: string | null
           created_at?: string
           updated_at?: string
         }

@@ -9,6 +9,7 @@ export type UserProfile = {
   joinedYear: number
   contributions: number
   avatarUrl?: string
+  role?: string
 }
 
 // Convert Supabase profile to app profile format
@@ -23,6 +24,7 @@ function convertFromSupabase(
     joinedYear: supabaseProfile.joined_year,
     contributions: supabaseProfile.contributions,
     avatarUrl: supabaseProfile.avatar_url || undefined,
+    role: supabaseProfile.role,
   }
 }
 
@@ -77,6 +79,38 @@ export async function getProfile(): Promise<UserProfile> {
       }
     }
     throw error
+  }
+}
+
+/**
+ * Get the current user's role from their profile
+ */
+export async function getUserRole(): Promise<string | null> {
+  try {
+    const { supabase } = await import('@/lib/supabase/config')
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return null
+    }
+
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (error) {
+      console.error('Error fetching user role:', error)
+      return null
+    }
+
+    return profile?.role || null
+  } catch (error) {
+    console.error('Error fetching user role:', error)
+    return null
   }
 }
 

@@ -7,8 +7,8 @@ export default async function BusinessProfile() {
 
   return (
     <BusinessLayout user={user}>
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-6">
+      <div className="space-y-6">
+        <div>
           <h1 className="text-2xl font-bold text-teal-950">
             Business Profile
           </h1>
@@ -17,9 +17,10 @@ export default async function BusinessProfile() {
           </p>
         </div>
 
-        <BusinessProfileForm user={user} />
+        <div className="max-w-2xl">
+          <BusinessProfileForm user={user} />
+        </div>
       </div>
     </BusinessLayout>
   )
 }
-

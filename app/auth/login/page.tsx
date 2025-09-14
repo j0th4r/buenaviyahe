@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
+import { getUserRole } from '@/lib/api/profile'
 
 // Simple email validation function
 function isValidEmail(email: string): boolean {
@@ -91,8 +92,29 @@ export default function AuthPage() {
           setError(error.message)
         }
       } else {
-        // Redirect to profile page after successful auth
-        router.push('/profile')
+        // Role-based redirect after successful authentication
+        // - admin role → /admin dashboard
+        // - business_owner role → /business dashboard
+        // - default (user/null) → /profile page
+        try {
+          const role = await getUserRole()
+
+          switch (role) {
+            case 'admin':
+              router.push('/admin')
+              break
+            case 'business_owner':
+              router.push('/business')
+              break
+            default:
+              router.push('/profile')
+              break
+          }
+        } catch (roleError) {
+          console.error('Error fetching user role:', roleError)
+          // Fallback to profile page if role fetch fails
+          router.push('/profile')
+        }
       }
     } catch (err) {
       console.error('Auth error:', err)

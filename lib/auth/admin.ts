@@ -1,5 +1,6 @@
 import { createServerClient } from '@/lib/supabase/config'
 import { redirect } from 'next/navigation'
+import { NextRequest } from 'next/server'
 
 export type UserRole = 'user' | 'admin' | 'business_owner'
 
@@ -15,7 +16,7 @@ export interface AdminUser {
 
 /**
  * Server-side admin authentication check
- * Redirects to login if not authenticated or not an admin/business owner
+ * Redirects to login if not authenticated or not an admin
  */
 export async function requireAdmin(): Promise<AdminUser> {
   const supabase = await createServerClient()
@@ -49,8 +50,8 @@ export async function requireAdmin(): Promise<AdminUser> {
     redirect('/auth/login?redirect=/admin')
   }
 
-  // Check if user has admin or business owner role
-  if (profile.role !== 'admin' && profile.role !== 'business_owner') {
+  // Check if user has admin role ONLY
+  if (profile.role !== 'admin') {
     console.log(
       'User does not have admin privileges, role:',
       profile.role
@@ -148,6 +149,51 @@ export async function requireBusinessOwner(): Promise<AdminUser> {
   }
 
   console.log('Business owner access granted for:', profile.name)
+
+  return {
+    id: user.id,
+    email: user.email!,
+    role: profile.role as UserRole,
+    profile: {
+      name: profile.name,
+      avatar_url: profile.avatar_url,
+    },
+  }
+}
+
+/**
+ * API-specific admin authentication check
+ * Returns admin user if authenticated, throws error if not
+ */
+export async function requireAdminAPI(
+  request: NextRequest
+): Promise<AdminUser> {
+  const supabase = await createServerClient()
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser()
+
+  if (error || !user) {
+    throw new Error('Authentication required')
+  }
+
+  // Get user profile with role
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('name, avatar_url, role')
+    .eq('id', user.id)
+    .single()
+
+  if (profileError || !profile) {
+    throw new Error('Profile not found')
+  }
+
+  // Check if user has admin role ONLY
+  if (profile.role !== 'admin') {
+    throw new Error('Admin privileges required')
+  }
 
   return {
     id: user.id,
