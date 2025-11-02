@@ -40,7 +40,7 @@ interface ChartDataPoint {
 
 const chartConfig = {
   visitors: {
-    label: 'Visitors',
+    label: 'Users',
     color: 'rgb(14, 165, 233)', // Tailwind blue-500
   },
 } satisfies ChartConfig
@@ -174,7 +174,7 @@ export function TourismActivityChart() {
             Tourism Activity
           </CardTitle>
           <CardDescription>
-            Visitor registrations and activity trends
+            User registrations and activity trends
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -207,7 +207,7 @@ export function TourismActivityChart() {
             Tourism Activity
           </CardTitle>
           <CardDescription>
-            Visitor registrations and activity trends
+            User registrations and activity trends
           </CardDescription>
         </div>
         <div className="flex items-center gap-2">
@@ -351,7 +351,7 @@ export function TourismActivityChart() {
             </span>
           </div>
           <div className="text-muted-foreground text-teal-950">
-            Showing daily visitor registration trends based on real
+            Showing daily user registration trends based on real
             data
           </div>
         </div>

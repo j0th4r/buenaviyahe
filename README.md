@@ -1,282 +1,386 @@
-# Buena Viyahe 🏝️
+# 🏝️ Buena Viyahe - Tourism Management Platform
 
-A modern travel planning application for exploring Buenavista, built with Next.js 15, TypeScript, and Supabase.
+**Welcome to Product Demo Day! 🎉**
 
-## 🌟 Features
-
-### Core Functionality
-
-- **Spot Discovery**: Browse and search tourist spots in Buenavista
-- **Trip Planning**: Create and manage personalized itineraries
-- **Interactive Maps**: Visualize locations with Google Maps integration
-- **User Authentication**: Secure login/registration with Supabase Auth
-- **Responsive Design**: Mobile-first design with desktop optimization
-
-### Key Features
-
-- **Real-time Search**: Instant search results with debounced queries
-- **Category Filtering**: Browse spots by categories (beaches, restaurants, etc.)
-- **Itinerary Builder**: Plan trips with day-by-day organization
-- **Profile Management**: User profiles with editable information
-- **Review System**: Rate and review tourist spots
-- **Image Management**: Upload and manage spot images via Supabase Storage
-
-## 🛠️ Tech Stack
-
-### Frontend
-
-- **Next.js 15** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **Tailwind CSS v4** - Modern utility-first CSS framework
-- **Radix UI** - Accessible component primitives
-- **Lucide React** - Beautiful icon library
-
-### Backend & Database
-
-- **Supabase** - Backend-as-a-Service
-  - PostgreSQL database
-  - Real-time subscriptions
-  - Row Level Security (RLS)
-  - File storage
-  - Authentication
-
-### Maps & External Services
-
-- **Google Maps API** - Interactive maps and location services
-- **@vis.gl/react-google-maps** - React wrapper for Google Maps
-
-### Development Tools
-
-- **ESLint** - Code linting
-- **PostCSS** - CSS processing
-- **Autoprefixer** - CSS vendor prefixing
-
-## 📁 Project Structure
-
-```
-buenaviyahe/
-├── app/                    # Next.js App Router pages
-│   ├── auth/              # Authentication pages
-│   ├── categories/        # Category browsing
-│   ├── planner/          # Trip planning interface
-│   ├── plans/            # Saved itineraries
-│   ├── profile/          # User profile management
-│   └── spots/            # Tourist spot details
-├── components/           # Reusable UI components
-│   ├── ui/              # Shadcn/ui components
-│   └── auth-provider.tsx # Authentication context
-├── hooks/               # Custom React hooks
-├── lib/                 # Utility libraries
-│   ├── api/            # API client functions
-│   ├── supabase/       # Supabase configuration
-│   └── utils/          # Helper functions
-├── public/             # Static assets
-├── styles/             # Global styles
-└── types/              # TypeScript type definitions
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-- Supabase account
-- Google Maps API key
-- Google Gemini API key
-
-### Environment Setup
-
-1. **Clone the repository**
-
-   ```bash
-   git clone <repository-url>
-   cd buenaviyahe
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   Create a `.env.local` file in the root directory:
-
-   ```env
-   # Supabase Configuration
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-
-   # Google Maps API
-   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
-
-   # Gemini AI API (for chatbot)
-   GEMINI_API_KEY=your_gemini_api_key
-   ```
-
-4. **Set up API Keys**
-   - **Supabase**: Create a new Supabase project and get your URL and keys
-   - **Google Maps**: Get an API key from Google Cloud Console
-   - **Gemini AI**: Get an API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-
-5. **Set up Supabase Database**
-   - Create a new Supabase project
-   - Run the database migrations (see Database Schema section)
-   - Configure Row Level Security policies
-   - Set up storage buckets for images
-
-6. **Start the development server**
-
-   ```bash
-   npm run dev
-   ```
-
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## 🗄️ Database Schema
-
-### Core Tables
-
-#### `spots`
-
-Tourist spots and attractions
-
-- `id` - Unique identifier
-- `title` - Spot name
-- `slug` - URL-friendly identifier
-- `location` - Address/area
-- `description` - Detailed description
-- `tags` - Array of tags
-- `images` - Array of image URLs
-- `rating` - Average rating
-- `reviews` - Number of reviews
-- `pricing` - Pricing information (JSON)
-- `amenities` - Available amenities
-- `lat/lng` - Geographic coordinates
-
-#### `itineraries`
-
-User-created trip plans
-
-- `id` - Unique identifier
-- `title` - Trip name
-- `image` - Cover image
-- `start_date/end_date` - Trip duration
-- `days` - Day-by-day itinerary (JSON)
-- `user_id` - Owner reference
-
-#### `categories`
-
-Spot categorization
-
-- `id` - Unique identifier
-- `name` - Category name
-- `description` - Category description
-- `image` - Category image
-
-#### `profiles`
-
-User profile information
-
-- `id` - User ID (links to auth.users)
-- `username` - Display name
-- `avatar_url` - Profile picture
-- `bio` - User bio
-
-## 🔧 Available Scripts
-
-```bash
-# Development
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-```
-
-## 🎨 UI Components
-
-The project uses a comprehensive set of UI components built with Radix UI primitives and styled with Tailwind CSS:
-
-- **Navigation**: Bottom tabs, breadcrumbs, navigation menus
-- **Forms**: Inputs, selects, checkboxes, radio groups
-- **Feedback**: Toasts, alerts, progress indicators
-- **Layout**: Cards, sheets, dialogs, accordions
-- **Data Display**: Tables, charts, calendars
-
-## 🔐 Authentication
-
-Authentication is handled by Supabase Auth with the following features:
-
-- Email/password registration and login
-- Session management
-- Protected routes
-- User profile management
-
-## 🗺️ Maps Integration
-
-Google Maps integration provides:
-
-- Interactive map views
-- Location markers for spots
-- Route visualization
-- Geographic search capabilities
-
-## 📱 Responsive Design
-
-The application is built with a mobile-first approach:
-
-- Optimized for mobile devices
-- Responsive layouts for tablets and desktops
-- Touch-friendly interactions
-- Progressive Web App capabilities
-
-## 🚀 Deployment
-
-### Vercel (Recommended)
-
-1. Connect your GitHub repository to Vercel
-2. Set up environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
-
-### Other Platforms
-
-The application can be deployed to any platform that supports Next.js:
-
-- Netlify
-- Railway
-- DigitalOcean App Platform
-- AWS Amplify
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [Supabase](https://supabase.com) for the backend infrastructure
-- [Next.js](https://nextjs.org) for the React framework
-- [Tailwind CSS](https://tailwindcss.com) for styling
-- [Radix UI](https://www.radix-ui.com) for accessible components
-- [Google Maps Platform](https://developers.google.com/maps) for mapping services
-
-## 📞 Support
-
-For support and questions:
-
-- Create an issue in the GitHub repository
-- Check the documentation in the `/docs` folder
-- Review the Supabase documentation for backend questions
+Buena Viyahe is a comprehensive tourism management platform that connects tourists, local government, and businesses in one unified ecosystem. Built with Next.js 15, TypeScript, Supabase, and powered by AI.
 
 ---
 
-**Buena Viyahe** - Making travel planning in Buenavista beautiful and effortless! 🌴✨
+## 🌟 **THREE-SIDED PLATFORM OVERVIEW**
+
+Our platform serves three distinct user groups, each with tailored experiences and powerful features:
+
+### 👤 **TOURIST/VISITOR EXPERIENCE**
+
+_Discover, Plan, and Explore Buenavista_
+
+### 🏛️ **LGU ADMIN DASHBOARD**
+
+_Municipal Tourism Management System_
+
+### 🏢 **BUSINESS ADMIN PANEL**
+
+_Business Owner Management Hub_
+
+---
+
+## 🧳 **TOURIST/VISITOR FEATURES**
+
+### 🏠 **Homepage & Discovery** (`/`)
+
+**The Gateway to Buenavista**
+
+- **Smart Search Bar**: Instant search with real-time results and debounced queries
+- **Popular Locations Carousel**: Showcases top-rated tourist spots with ratings and pricing
+- **Category Browse**: Visual category cards (beaches, restaurants, activities, etc.)
+- **Responsive Design**: Mobile-first with seamless desktop experience
+- **Forward Navigation**: Maintains user flow when navigating from itinerary planning
+
+### 🗺️ **Interactive Map Experience** (`/map`)
+
+**Explore Buenavista Visually**
+
+- **Google Maps Integration**: Satellite and road view options
+- **Dynamic Markers**: Golden pins for all tourist spots with info windows
+- **User Location**: Blue dot showing current position with "My Location" button
+- **Discover Drawer**: Scrollable spot cards with images, ratings, and pricing
+- **Map Controls**: Zoom in/out, map type switcher, custom styling
+- **Spot Details**: Click markers to view spot information and navigate to details
+
+### 📱 **Spot Details & Reviews** (`/spots/[slug]`)
+
+**Comprehensive Location Information**
+
+- **High-Quality Image Galleries**: Supabase storage integration
+- **Detailed Descriptions**: Rich content with amenities and features
+- **Pricing Information**: Clear pricing structure for different services
+- **Star Ratings System**: Aggregate ratings from user reviews
+- **Location Data**: Address, coordinates, and map integration
+- **Review Management**: Read and submit reviews for spots
+
+### 📅 **Trip Planning Suite**
+
+#### **New Plan Creation** (`/planner/new`)
+
+- **Date Range Picker**: Calendar-based trip duration selection
+- **Plan Naming**: Custom itinerary titles
+- **Spot Integration**: Pre-populate from spot detail pages
+- **Authentication Required**: Secure trip planning for logged-in users
+
+#### **Itinerary Builder** (`/planner/itinerary`)
+
+- **Day-by-Day Planning**: Organize spots by travel days
+- **Drag & Drop Interface**: Reorder and schedule activities
+- **Time Management**: Set visit times for each spot
+- **Visual Itinerary**: Image-rich planning interface
+
+#### **My Plans Dashboard** (`/plans`)
+
+- **Saved Itineraries**: View all created travel plans
+- **Trip Overview Cards**: Display dates, duration, and spot count
+- **Quick Access**: Navigate to detailed itinerary views
+- **Plan Management**: Edit, delete, and share travel plans
+
+### 👤 **Profile & Account Management** (`/profile`)
+
+**Personalized User Experience**
+
+- **Profile Editing** (`/profile/edit`): Update personal information and preferences
+- **Account Settings**: Manage login credentials and preferences
+- **Trip History**: Access to all planned and completed trips
+
+### 🗂️ **Category Browse** (`/categories`)
+
+**Organized Discovery Experience**
+
+- **Category Listings**: Browse spots by type (beaches, restaurants, attractions)
+- **Dynamic Category Pages** (`/categories/[categoryId]`): Filtered spot listings
+- **Visual Category Cards**: Engaging images with pricing information
+
+### 🤖 **AI-Powered Chatbot** (Site-wide)
+
+**Meet Sean the Explorer**
+
+- **Smart Tourism Assistant**: Ask about spots, activities, and travel tips
+- **Context-Aware Responses**: Understands Buenavista-specific queries
+- **Conversational Interface**: Natural language interaction
+- **Floating Widget**: Always accessible chat interface
+- **Powered by Gemini AI**: Advanced language understanding
+
+### 🔐 **Authentication System** (`/auth`)
+
+- **Secure Login/Register** (`/auth/login`, `/auth/register`): Email-based authentication
+- **Email Verification** (`/check-email`): Secure account activation
+- **Session Management**: Persistent login across devices
+
+---
+
+## 🏛️ **LGU ADMIN DASHBOARD**
+
+_Local Government Unit Tourism Management System_
+
+### 📊 **Main Dashboard** (`/admin`)
+
+**Command Center for Tourism Management**
+
+- **Key Performance Metrics**: Tourism statistics, spot counts, user engagement
+- **Tourism Activity Charts**: Visual analytics of visitor patterns
+- **Recent Activity Feed**: Live updates on business registrations, spot approvals, and user activity
+- **Quick Actions Panel**: Direct access to common admin tasks
+- **Spots Overview Table**: Status monitoring of all tourist locations
+
+### 🏢 **Business Registration Management** (`/admin/business-registration`)
+
+**Control Business Onboarding Process**
+
+- **Registration Overview**: Statistics on business applications
+- **Business Owner Verification**: Approve/reject business registrations
+- **Onboarding Workflow**: Streamlined process for new businesses
+- **Business Statistics Dashboard**: Track registration trends and metrics
+
+### 🏪 **Business Details & Monitoring** (`/admin/business-details`)
+
+**Comprehensive Business Oversight**
+
+- **Business Profile Management**: View and edit business information
+- **Spot Assignment**: Assign ownership of tourist spots to businesses
+- **Performance Monitoring**: Track business metrics and performance
+- **Business Contact Management**: Maintain business owner information
+- **Modal Detail Views**: In-depth business profile examination
+
+### ✅ **Spot Approval System** (`/admin/spot-approvals`)
+
+**Quality Control for Tourist Spots**
+
+- **Pending Approvals Queue**: Review new spot submissions
+- **Approval Workflow**: Accept, reject, or request modifications
+- **Quality Standards**: Ensure spots meet municipal standards
+- **Batch Processing**: Efficient approval of multiple spots
+- **Status Management**: Track approval progress and history
+
+### 👥 **User Management** (`/admin/user-management`)
+
+**Platform User Administration**
+
+- **User Directory**: Complete list of platform users
+- **Role Management**: Assign user roles (admin, business_owner, user)
+- **User Analytics**: Track user engagement and activity
+- **Account Moderation**: Suspend or activate user accounts
+- **Role-Based Permissions**: Control access levels
+
+### 📈 **Reports & Analytics** (`/admin/reports`)
+
+**Data-Driven Tourism Insights**
+
+- **Tourism Analytics Dashboard**: Comprehensive performance metrics
+- **Visitor Statistics**: Track tourism trends and patterns
+- **Revenue Analytics**: Monitor economic impact
+- **Spot Performance**: Identify top-performing locations
+- **Custom Date Ranges**: Flexible reporting periods
+
+### ⚙️ **System Settings** (`/admin/settings`)
+
+**Platform Configuration Management**
+
+- **General Settings**: LGU information and branding
+- **Security Configuration**: Authentication and access controls
+- **Notification Preferences**: Email and system alerts
+- **Feature Toggles**: Enable/disable platform features
+- **System Maintenance**: Maintenance mode controls
+
+---
+
+## 🏢 **BUSINESS ADMIN PANEL**
+
+_Business Owner Management Hub_
+
+### 🏠 **Business Dashboard** (`/business`)
+
+**Your Business Performance Center**
+
+- **Key Performance Metrics**: Spot count, reviews, ratings, and revenue
+- **Top Spots Ranking**: Your highest-rated locations
+- **Revenue Analytics**: Track earnings across all properties
+- **Quick Action Links**: Direct access to management functions
+- **Recent Activity**: Latest reviews and performance updates
+
+### 🏝️ **Spot Management Suite** (`/business/spots`)
+
+#### **Spots Overview** (`/business/spots`)
+
+- **My Locations Dashboard**: Visual cards showing all owned spots
+- **Performance Metrics**: Individual spot ratings and review counts
+- **Quick Actions**: Edit, delete, and manage each location
+- **Add New Spot**: Quick access to spot creation
+
+#### **Add New Spot** (`/business/spots/new`)
+
+- **Comprehensive Spot Form**: Title, description, pricing, amenities
+- **Image Upload System**: Multiple image upload with Supabase storage
+- **Location Mapping**: GPS coordinate integration
+- **Pricing Configuration**: Flexible pricing structure setup
+- **Tags & Categories**: Proper spot categorization
+
+#### **Edit Spot** (`/business/spots/[id]/edit`)
+
+- **Full Editing Interface**: Modify all spot details
+- **Image Management**: Add, remove, and reorder spot photos
+- **Ownership Validation**: Security checks for spot ownership
+- **Real-time Updates**: Changes reflected immediately
+
+### ⭐ **Review Management** (`/business/reviews`)
+
+**Customer Feedback Hub**
+
+- **Review Dashboard**: All reviews for your spots in one place
+- **Rating Analytics**: Average ratings and review distribution
+- **Customer Insights**: Understanding guest feedback patterns
+- **Review Organization**: Grouped by spot for easy management
+- **Response Management**: (Future feature) Respond to customer reviews
+
+### 📊 **Business Analytics** (`/business/analytics`)
+
+**Performance Insights Dashboard**
+
+- **Detailed Analytics Charts**: Visual representation of business metrics
+- **Performance Trends**: Track growth and patterns over time
+- **Comparative Analysis**: Benchmark against industry standards
+- **Revenue Tracking**: Comprehensive financial performance
+- **Data Export**: Download reports for external analysis
+
+### 👤 **Business Profile** (`/business/profile`)
+
+**Manage Your Business Identity**
+
+- **Profile Information**: Business name, contact details, description
+- **Account Settings**: Login credentials and security
+- **Business Verification**: Maintain verified status
+- **Contact Management**: Update business contact information
+
+---
+
+## 🛠️ **TECHNICAL ARCHITECTURE**
+
+### **Frontend Technology Stack**
+
+- **Next.js 15** with App Router for modern React development
+- **TypeScript** for type-safe development
+- **Tailwind CSS v4** for responsive, modern styling
+- **Radix UI** for accessible, unstyled components
+- **Lucide React** for beautiful, consistent icons
+
+### **Backend & Database**
+
+- **Supabase** as Backend-as-a-Service
+- **PostgreSQL** for robust data management
+- **Row Level Security (RLS)** for data protection
+- **Real-time subscriptions** for live updates
+- **Supabase Storage** for image and file management
+
+### **AI & External Services**
+
+- **Google Gemini AI** powering the chatbot assistant
+- **Google Maps Platform** for mapping and location services
+- **@vis.gl/react-google-maps** for React map integration
+
+### **Authentication & Security**
+
+- **Supabase Auth** for user management
+- **Role-based access control** (user, business_owner, admin)
+- **Server-side API protection** with middleware
+- **Secure environment variable management**
+
+---
+
+## 🔐 **ROLE-BASED ACCESS CONTROL**
+
+### **User Roles**
+
+1. **Regular User/Tourist** (`role: 'user'`)
+   - Access to discovery, planning, and review features
+   - Create and manage personal itineraries
+   - Submit reviews and ratings
+
+2. **Business Owner** (`role: 'business_owner'`)
+   - Full business admin panel access
+   - Manage owned spots and reviews
+   - Access to business analytics
+   - Cannot access LGU admin features
+
+3. **LGU Admin** (`role: 'admin'`)
+   - Complete platform administration
+   - User and business management
+   - System settings and configuration
+   - Full access to all platform features
+
+### **Security Implementation**
+
+- **API Route Protection**: All admin endpoints require proper authentication
+- **Database-level Security**: RLS policies enforce access controls
+- **Client-side Guards**: UI components respect user permissions
+- **Session Management**: Secure token handling and validation
+
+---
+
+## 📱 **RESPONSIVE DESIGN & ACCESSIBILITY**
+
+### **Mobile-First Approach**
+
+- **Progressive Web App** capabilities
+- **Touch-optimized interfaces** for mobile devices
+- **Responsive breakpoints** for tablets and desktops
+- **Bottom navigation tabs** for mobile convenience
+
+### **Accessibility Features**
+
+- **ARIA labels** and semantic HTML
+- **Keyboard navigation** support
+- **Screen reader compatibility**
+- **High contrast** design elements
+
+---
+
+## 🚀 **DEPLOYMENT & SCALABILITY**
+
+### **Production Ready**
+
+- **Vercel deployment** optimized for Next.js
+- **Environment-based configuration** for different stages
+- **Performance optimization** with Next.js built-in features
+- **SEO optimization** with proper meta tags and structured data
+
+### **Scalability Features**
+
+- **Database indexing** for optimal query performance
+- **Image optimization** with Next.js Image component
+- **API rate limiting** and caching strategies
+- **CDN integration** for global content delivery
+
+---
+
+## 🎯 **KEY DIFFERENTIATORS**
+
+✅ **Three-sided platform** serving tourists, government, and businesses
+✅ **AI-powered assistance** with contextual tourism advice  
+✅ **Real-time data** with live updates and notifications
+✅ **Comprehensive role management** with secure access controls
+✅ **Mobile-first design** optimized for on-the-go travelers
+✅ **Integrated mapping** with Google Maps Platform
+✅ **Advanced trip planning** with drag-and-drop interfaces
+✅ **Business intelligence** with detailed analytics dashboards
+
+---
+
+## 📞 **GETTING STARTED**
+
+1. **Clone the repository** and install dependencies
+2. **Set up environment variables** for Supabase, Google Maps, and Gemini AI
+3. **Configure database** with provided migration scripts
+4. **Deploy to Vercel** or your preferred hosting platform
+5. **Configure admin users** and start managing your tourism platform
+
+---
+
+**Buena Viyahe** - Where Technology Meets Tourism Excellence! 🌴✨
+
+_Built for the modern traveler, designed for efficient management, powered by cutting-edge technology._

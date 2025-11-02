@@ -30,3 +30,4 @@ next-env.d.ts
 .cursor/
 .cursorrules
 .cursor-settings/
+.code-profile
