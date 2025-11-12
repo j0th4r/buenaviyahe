@@ -120,7 +120,7 @@ function getElevationActions(currentRole: string) {
 
   if (currentRole === 'business_owner') {
     actions.push({
-      label: 'Demote to User',
+      label: 'Change to User',
       newRole: 'user',
       icon: <ArrowDownCircle className="h-4 w-4 mr-2" />,
       variant: 'outline' as const,

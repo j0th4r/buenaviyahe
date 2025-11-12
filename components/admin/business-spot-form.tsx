@@ -29,6 +29,7 @@ import { getImageUrl } from '@/lib/utils/image'
 import { Database } from '@/types/supabase'
 import Link from 'next/link'
 import Image from 'next/image'
+import { LocationMapPicker } from '@/components/admin/location-map-picker'
 
 interface BusinessSpotFormProps {
   ownerId: string
@@ -560,48 +561,21 @@ export function BusinessSpotForm({
           <CardHeader>
             <CardTitle>Location Coordinates</CardTitle>
             <CardDescription>
-              Precise location for map display (optional)
+              Click on the map to set the precise location for your spot
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="lat">Latitude</Label>
-                <Input
-                  id="lat"
-                  type="number"
-                  step="any"
-                  value={formData.lat || ''}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      lat: e.target.value
-                        ? parseFloat(e.target.value)
-                        : null,
-                    }))
-                  }
-                  placeholder="e.g., 13.2572"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lng">Longitude</Label>
-                <Input
-                  id="lng"
-                  type="number"
-                  step="any"
-                  value={formData.lng || ''}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      lng: e.target.value
-                        ? parseFloat(e.target.value)
-                        : null,
-                    }))
-                  }
-                  placeholder="e.g., 123.7461"
-                />
-              </div>
-            </div>
+            <LocationMapPicker
+              lat={formData.lat}
+              lng={formData.lng}
+              onLocationChange={(lat, lng) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  lat,
+                  lng,
+                }))
+              }}
+            />
           </CardContent>
         </Card>
 

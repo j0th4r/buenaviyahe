@@ -2,14 +2,33 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Calendar, Clock, Plus, Search } from 'lucide-react'
-import { useItineraries } from '@/lib/api'
+import { Calendar, Clock, Plus, Search, Edit2, Trash2, MoreVertical } from 'lucide-react'
+import { useItineraries, updateItinerary, deleteItinerary } from '@/lib/api'
 import { getImageUrl } from '@/lib/utils/image'
 import { Suspense, useState, useEffect } from 'react'
 import { BottomTabs } from '@/components/ui/bottom-tabs'
 import { cn } from '@/lib/utils'
 import type { Itinerary } from '@/lib/itinerary-store'
 import { useAuth } from '@/hooks/use-auth'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 function PlansPageContent() {
   const {
@@ -25,6 +44,13 @@ function PlansPageContent() {
   }
 
   const { user, loading: authLoading } = useAuth()
+  const [editingItinerary, setEditingItinerary] = useState<Itinerary | null>(null)
+  const [deletingItinerary, setDeletingItinerary] = useState<Itinerary | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editStart, setEditStart] = useState('')
+  const [editEnd, setEditEnd] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Consistent date formatting to prevent hydration mismatches
   const formatDateRange = (start?: string, end?: string) => {
@@ -68,6 +94,55 @@ function PlansPageContent() {
       (total, spots) => total + spots.length,
       0
     )
+  }
+
+  const handleEditClick = (itinerary: Itinerary, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setEditTitle(itinerary.title || '')
+    setEditStart(itinerary.start || '')
+    setEditEnd(itinerary.end || '')
+    setEditingItinerary(itinerary)
+  }
+
+  const handleDeleteClick = (itinerary: Itinerary, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setDeletingItinerary(itinerary)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingItinerary) return
+
+    try {
+      setIsSaving(true)
+      await updateItinerary(editingItinerary.id, {
+        title: editTitle || undefined,
+        start: editStart || undefined,
+        end: editEnd || undefined,
+      })
+      setEditingItinerary(null)
+      await refresh()
+    } catch (error) {
+      console.error('Failed to update itinerary:', error)
+      alert('Failed to update itinerary. Please try again.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItinerary) return
+
+    try {
+      setIsDeleting(true)
+      await deleteItinerary(deletingItinerary.id)
+      setDeletingItinerary(null)
+      await refresh()
+    } catch (error) {
+      console.error('Failed to delete itinerary:', error)
+      alert('Failed to delete itinerary. Please try again.')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   // Show loading state while checking authentication
@@ -243,10 +318,90 @@ function PlansPageContent() {
               <ItineraryCard
                 key={itinerary.id}
                 itinerary={itinerary}
+                onEdit={handleEditClick}
+                onDelete={handleDeleteClick}
               />
             ))}
           </div>
         )}
+
+        {/* Edit Dialog */}
+        <Dialog open={!!editingItinerary} onOpenChange={(open) => !open && setEditingItinerary(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Plan</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <label htmlFor="edit-title" className="block text-sm font-medium mb-1">
+                  Title
+                </label>
+                <Input
+                  id="edit-title"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  placeholder="Enter plan title"
+                />
+              </div>
+              <div>
+                <label htmlFor="edit-start" className="block text-sm font-medium mb-1">
+                  Start Date
+                </label>
+                <Input
+                  id="edit-start"
+                  type="date"
+                  value={editStart}
+                  onChange={(e) => setEditStart(e.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor="edit-end" className="block text-sm font-medium mb-1">
+                  End Date
+                </label>
+                <Input
+                  id="edit-end"
+                  type="date"
+                  value={editEnd}
+                  onChange={(e) => setEditEnd(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setEditingItinerary(null)}
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleSaveEdit} disabled={isSaving}>
+                {isSaving ? 'Saving...' : 'Save'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!deletingItinerary} onOpenChange={(open) => !open && setDeletingItinerary(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Plan?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete "{deletingItinerary?.title || 'Untitled Plan'}"? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="bg-destructive text-white hover:bg-destructive/90"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </main>
       <BottomTabs />
     </div>
@@ -295,10 +450,13 @@ export default function PlansPage() {
 
 type ItineraryCardProps = {
   itinerary: Itinerary
+  onEdit: (itinerary: Itinerary, e: React.MouseEvent) => void
+  onDelete: (itinerary: Itinerary, e: React.MouseEvent) => void
 }
 
-function ItineraryCard({ itinerary }: ItineraryCardProps) {
+function ItineraryCard({ itinerary, onEdit, onDelete }: ItineraryCardProps) {
   const router = useRouter()
+  const [showMenu, setShowMenu] = useState(false)
   // Consistent date formatting to prevent hydration mismatches
   const formatDateRange = (start?: string, end?: string) => {
     if (!start) return 'No dates set'
@@ -366,10 +524,55 @@ function ItineraryCard({ itinerary }: ItineraryCardProps) {
       )}
 
       <div className="space-y-3">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-1 pr-16">
+        <div className="flex items-start justify-between">
+          <h3 className="text-xl font-bold text-gray-900 mb-1 flex-1 pr-2">
             {itinerary.title || 'Untitled Trip'}
           </h3>
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowMenu(!showMenu)
+              }}
+              className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="More options"
+            >
+              <MoreVertical className="h-5 w-5 text-gray-600" />
+            </button>
+            {showMenu && (
+              <>
+                <div className="absolute right-0 top-8 z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]">
+                  <button
+                    onClick={(e) => {
+                      onEdit(itinerary, e)
+                      setShowMenu(false)
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                    Edit
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      onDelete(itinerary, e)
+                      setShowMenu(false)
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 text-red-600 flex items-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </button>
+                </div>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowMenu(false)
+                  }}
+                />
+              </>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-1 text-sm text-gray-600">

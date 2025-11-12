@@ -18,8 +18,20 @@ import {
   parseISO,
   isValid,
 } from 'date-fns'
-import { getItinerary as getItineraryFromAPI } from '@/lib/api'
+import {
+  getItinerary as getItineraryFromAPI,
+  updateItinerary,
+} from '@/lib/api'
 import type { Itinerary } from '@/lib/itinerary-store'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export default function PlanDetailsPage() {
   const params = useParams()
@@ -28,6 +40,12 @@ export default function PlanDetailsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeDay, setActiveDay] = useState<number>(1)
+  const [editingTime, setEditingTime] = useState<{
+    spotId: string
+    time: string
+    day: number
+  } | null>(null)
+  const [isUpdating, setIsUpdating] = useState(false)
 
   const itineraryId = params.id as string
 
@@ -80,6 +98,48 @@ export default function PlanDetailsPage() {
 
   const countForDay = (dIndex: number) =>
     itinerary?.days?.[dIndex]?.length ?? 0
+
+  const handleEditTime = (spotId: string, currentTime?: string) => {
+    setEditingTime({
+      spotId,
+      time: currentTime || '09:00',
+      day: activeDay,
+    })
+  }
+
+  const handleSaveTime = async () => {
+    if (!editingTime || !itinerary) return
+
+    try {
+      setIsUpdating(true)
+      // Update the spot time in the itinerary directly
+      const days = { ...(itinerary.days ?? {}) }
+      const daySpots = days[editingTime.day] || []
+
+      days[editingTime.day] = daySpots.map((spot) =>
+        spot.id === editingTime.spotId
+          ? { ...spot, time: editingTime.time }
+          : spot
+      )
+
+      const updatedItinerary: Itinerary = {
+        ...itinerary,
+        days,
+      }
+
+      // Sync to Supabase
+      await updateItinerary(updatedItinerary.id, {
+        days: updatedItinerary.days,
+      })
+      setItinerary(updatedItinerary)
+      setEditingTime(null)
+    } catch (error) {
+      console.error('Failed to update spot time:', error)
+      alert('Failed to update time. Please try again.')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
 
   // Ratings component
   const Rating = ({ value }: { value: number }) => {
@@ -144,8 +204,7 @@ export default function PlanDetailsPage() {
           </p>
           <button
             onClick={() => router.push('/plans')}
-            className="px-6 py-3 bg-
-            -500 text-white rounded-full hover:bg-teal-600 transition-colors"
+            className="px-6 py-3 bg-teal-500 text-white rounded-full hover:bg-teal-600 transition-colors"
           >
             Back to Plans
           </button>
@@ -240,12 +299,20 @@ export default function PlanDetailsPage() {
                       </p>
                     )}
                   </div>
-                  {s.time && (
-                    <div className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-sm font-semibold text-gray-800">
-                      <Clock className="h-4 w-4 text-gray-700" />
-                      {s.time}
-                    </div>
-                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleEditTime(s.id, s.time)
+                    }}
+                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold transition-colors ${
+                      s.time
+                        ? 'bg-white/90 text-gray-800 hover:bg-white'
+                        : 'bg-white/70 text-gray-600 hover:bg-white/90'
+                    }`}
+                  >
+                    <Clock className="h-4 w-4 text-gray-700" />
+                    {s.time || 'Set time'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -277,6 +344,56 @@ export default function PlanDetailsPage() {
             <Map className="h-5 w-5" />
             View Whole Itinerary
           </button>
+        </div>
+      )}
+
+      {/* Time Edit Dialog */}
+      <Dialog
+        open={!!editingTime}
+        onOpenChange={(open) => !open && setEditingTime(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Time</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <label
+              htmlFor="time-input"
+              className="block text-sm font-medium mb-2"
+            >
+              Time (HH:mm)
+            </label>
+            <Input
+              id="time-input"
+              type="time"
+              value={editingTime?.time || '09:00'}
+              onChange={(e) =>
+                setEditingTime(
+                  editingTime
+                    ? { ...editingTime, time: e.target.value }
+                    : null
+                )
+              }
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditingTime(null)}
+              disabled={isUpdating}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSaveTime} disabled={isUpdating}>
+              {isUpdating ? 'Saving...' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {isUpdating && (
+        <div className="fixed bottom-4 right-4 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg shadow-lg text-sm">
+          Updating...
         </div>
       )}
     </div>

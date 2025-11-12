@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/avatar'
 import { Star, MessageSquare, Calendar, MapPin } from 'lucide-react'
 import { createServiceClient } from '@/lib/supabase/config'
+import { DeleteReviewButton } from '@/components/business/delete-review-button'
 
 async function getBusinessReviews(ownerId: string) {
   const supabase = createServiceClient()
@@ -205,6 +206,7 @@ export default async function BusinessReviews() {
                         <Star className="h-3 w-3 text-yellow-500" />
                         {review.rating}
                       </Badge>
+                      <DeleteReviewButton reviewId={review.id} />
                     </div>
                   </div>
 

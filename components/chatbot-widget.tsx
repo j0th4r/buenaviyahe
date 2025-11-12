@@ -236,7 +236,7 @@ export function ChatbotWidget() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          title: 'Itinerary from Chatbot',
+          title: 'My Trip',
           daySpots: spots,
         }),
       })
