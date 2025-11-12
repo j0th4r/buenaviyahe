@@ -1,30 +1,65 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   MessageCircle,
   Send,
   Loader2,
   ChevronDown,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
+
+type MessageAction = 'add-itinerary'
+
+interface ExtractedSpot {
+  id: string
+  title: string
+  location: string
+  lat: number
+  lng: number
+  rating: number
+  image?: string
+  pricePerNight?: number
+  day: number
+  time?: string
+}
+
+interface DaySpots {
+  [day: string]: ExtractedSpot[]
+}
 
 interface Message {
   id: string
   content: string
   sender: 'user' | 'bot'
   timestamp: Date
+  action?: MessageAction
+  spots?: DaySpots
+}
+
+interface ChatHistoryPayload {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+interface ChatResponsePayload {
+  message?: string
+  showAddButton?: boolean
+  detectedBudget?: number | null
+  mentionedSpots?: DaySpots
 }
 
 export function ChatbotWidget() {
+  const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       content:
-        'Hola, soy Sean! 👋 Do you want to ask me about fun places to visit, cool activities to try, or travel tips on your adventure? 🌟🗺️',
+        'Hola, soy Sean! I can help you uncover Buenavista spots, suggest activities, and build an itinerary once you share your budget.',
       sender: 'bot',
       timestamp: new Date(),
     },
@@ -49,38 +84,95 @@ export function ChatbotWidget() {
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return
 
+    const trimmedInput = input.trim()
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: input.trim(),
+      content: trimmedInput,
       sender: 'user',
       timestamp: new Date(),
     }
 
-    setMessages((prev) => [...prev, userMessage])
+    const nextMessages = [...messages, userMessage]
+    setMessages(nextMessages)
     setInput('')
     setIsLoading(true)
 
     try {
+      // Provide conversation history so the API can keep context and enforce budget checks.
+      const historyPayload: ChatHistoryPayload[] = nextMessages.map(
+        (message) => ({
+          role: message.sender === 'user' ? 'user' : 'assistant',
+          content: message.content,
+        })
+      )
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: input.trim() }),
+        body: JSON.stringify({
+          message: trimmedInput,
+          history: historyPayload,
+        }),
       })
 
       if (!response.ok) {
         throw new Error('Failed to get response')
       }
 
-      const data = await response.json()
+      const data: ChatResponsePayload = await response.json()
+
+      if (!data.message) {
+        throw new Error('No response message from chatbot')
+      }
+
+      const shouldShowAddButton = Boolean(data.showAddButton)
+
+      // Debug logging
+      const totalMentionedSpots = data.mentionedSpots
+        ? Object.values(data.mentionedSpots).reduce(
+            (sum, daySpots) => sum + daySpots.length,
+            0
+          )
+        : 0
+
+      console.log('API Response:', {
+        showAddButton: data.showAddButton,
+        detectedBudget: data.detectedBudget,
+        shouldShowAddButton,
+        spotsDays: data.mentionedSpots
+          ? Object.keys(data.mentionedSpots)
+          : [],
+        totalMentionedSpots,
+        messagePreview: data.message.substring(0, 100),
+      })
 
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: data.message,
         sender: 'bot',
         timestamp: new Date(),
+        action: shouldShowAddButton ? 'add-itinerary' : undefined,
+        spots: data.mentionedSpots,
       }
+
+      const totalSpots = botMessage.spots
+        ? Object.values(botMessage.spots).reduce(
+            (sum, daySpots) => sum + daySpots.length,
+            0
+          )
+        : 0
+
+      console.log('Bot Message:', {
+        action: botMessage.action,
+        hasAction: !!botMessage.action,
+        willShowButton: botMessage.action === 'add-itinerary',
+        spotsDays: botMessage.spots
+          ? Object.keys(botMessage.spots)
+          : [],
+        totalSpots,
+      })
 
       setMessages((prev) => [...prev, botMessage])
     } catch (error) {
@@ -98,10 +190,85 @@ export function ChatbotWidget() {
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
+  const handleKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
       sendMessage()
+    }
+  }
+
+  const handleAddItinerary = async (spots?: DaySpots) => {
+    console.log('handleAddItinerary called with spots:', spots)
+
+    const totalSpots = spots
+      ? Object.values(spots).reduce(
+          (sum, daySpots) => sum + daySpots.length,
+          0
+        )
+      : 0
+
+    if (!spots || totalSpots === 0) {
+      console.error('No spots to add to itinerary', {
+        spots,
+        totalSpots,
+      })
+
+      // Show user-friendly error message
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content:
+          "Sorry, I couldn't find any specific spots to add. Please ask me to create an itinerary with specific locations.",
+        sender: 'bot',
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, errorMessage])
+      return
+    }
+
+    try {
+      setIsLoading(true)
+
+      const response = await fetch('/api/itinerary/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: 'Itinerary from Chatbot',
+          daySpots: spots,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        if (response.status === 401) {
+          // User not authenticated, redirect to login
+          router.push('/auth/login?redirect=/chat')
+          return
+        }
+        throw new Error(
+          errorData.error || 'Failed to create itinerary'
+        )
+      }
+
+      const data = await response.json()
+
+      // Success! Close the chat and redirect to the planner with the new itinerary
+      setIsOpen(false)
+    } catch (error) {
+      console.error('Error creating itinerary:', error)
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content:
+          "Sorry, I couldn't save your itinerary. Please make sure you're logged in and try again.",
+        sender: 'bot',
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, errorMessage])
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -181,6 +348,18 @@ export function ChatbotWidget() {
                     <p className="leading-relaxed whitespace-pre-wrap break-words overflow-wrap-anywhere">
                       {message.content}
                     </p>
+                    {message.action === 'add-itinerary' && (
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          handleAddItinerary(message.spots)
+                        }
+                        disabled={isLoading}
+                        className="mt-2 w-fit bg-teal-600 text-white hover:bg-teal-700"
+                      >
+                        {isLoading ? 'Saving...' : 'Add to planner'}
+                      </Button>
+                    )}
                     <span
                       className={cn(
                         'text-xs opacity-70',
@@ -220,7 +399,7 @@ export function ChatbotWidget() {
                 placeholder="Ask me about Buenavista..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 disabled={isLoading}
                 className="min-h-[40px] resize-none"
                 autoFocus={isOpen}
