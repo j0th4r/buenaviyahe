@@ -41,9 +41,12 @@ export default function NewPlanPage() {
   const lng = lngParam ? Number(lngParam) : undefined
   const time = search.get('time') || '09:00'
 
-  // Use static year to prevent hydration mismatches due to timezone differences
-  const year = 2024
-  const defaultMonth = new Date(year, 7, 1)
+  // Use current year and month for the calendar default
+  const defaultMonth = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth(),
+    1
+  )
   const [range, setRange] = useState<DateRange | undefined>(undefined)
   const [planName, setPlanName] = useState<string>('')
 
