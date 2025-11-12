@@ -32,6 +32,7 @@ function PageContent() {
   // Safely get search params - only use them after hydration
   const append = isClient ? params.get('append') : null
   const day = isClient ? params.get('day') : null
+  const planId = isClient ? params.get('planId') : null
   const [query, setQuery] = useState('')
   const [debounced, setDebounced] = useState('')
   const [searchResults, setSearchResults] = useState<any[] | null>(
@@ -39,6 +40,25 @@ function PageContent() {
   )
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
+
+  // Load plan into localStorage if planId is provided
+  useEffect(() => {
+    if (planId && isClient) {
+      const loadPlan = async () => {
+        try {
+          const { getItinerary } = await import('@/lib/api')
+          const { setItinerary } = await import('@/lib/itinerary-store')
+          const plan = await getItinerary(planId)
+          if (plan) {
+            setItinerary(plan)
+          }
+        } catch (error) {
+          console.error('Failed to load plan:', error)
+        }
+      }
+      loadPlan()
+    }
+  }, [planId, isClient])
 
   // Fetch data using API hooks
   const {
@@ -58,6 +78,7 @@ function PageContent() {
     const url = new URL(href, 'https://buenaviyahe.com')
     if (append) url.searchParams.set('append', '1')
     if (day) url.searchParams.set('day', day)
+    if (planId) url.searchParams.set('planId', planId)
     return url.pathname + (url.search ? url.search : '')
   }
 

@@ -1,7 +1,12 @@
 'use client'
 
+import { BottomTabs } from '@/components/ui/bottom-tabs'
 import { useEffect, useMemo, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import {
+  useParams,
+  useRouter,
+  useSearchParams,
+} from 'next/navigation'
 import {
   Star,
   StarHalf,
@@ -10,6 +15,8 @@ import {
   Calendar,
   MapPin,
   Map,
+  Plus,
+  Trash2,
 } from 'lucide-react'
 import {
   format,
@@ -36,6 +43,7 @@ import { Input } from '@/components/ui/input'
 export default function PlanDetailsPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [itinerary, setItinerary] = useState<Itinerary | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -71,6 +79,31 @@ export default function PlanDetailsPage() {
       loadItinerary()
     }
   }, [itineraryId])
+
+  // Reload itinerary when returning from adding a spot (check URL params)
+  useEffect(() => {
+    const activeDayParam = searchParams.get('activeDay')
+    if (activeDayParam) {
+      const day = Number(activeDayParam)
+      if (day > 0) {
+        setActiveDay(day)
+      }
+      // Reload itinerary to get latest changes
+      const reloadItinerary = async () => {
+        try {
+          const data = await getItineraryFromAPI(itineraryId)
+          if (data) {
+            setItinerary(data)
+          }
+        } catch (err) {
+          console.error('Failed to reload itinerary:', err)
+        }
+      }
+      reloadItinerary()
+      // Clean up URL param
+      router.replace(`/plans/${itineraryId}`)
+    }
+  }, [itineraryId, searchParams, router])
 
   // Build days for chip labels
   const fromParam = itinerary?.start
@@ -136,6 +169,35 @@ export default function PlanDetailsPage() {
     } catch (error) {
       console.error('Failed to update spot time:', error)
       alert('Failed to update time. Please try again.')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleRemove = async (spotId: string) => {
+    if (!itinerary) return
+
+    try {
+      setIsUpdating(true)
+      // Remove the spot from the itinerary directly
+      const days = { ...(itinerary.days ?? {}) }
+      const daySpots = days[activeDay] || []
+
+      days[activeDay] = daySpots.filter((spot) => spot.id !== spotId)
+
+      const updatedItinerary: Itinerary = {
+        ...itinerary,
+        days,
+      }
+
+      // Sync to Supabase
+      await updateItinerary(updatedItinerary.id, {
+        days: updatedItinerary.days,
+      })
+      setItinerary(updatedItinerary)
+    } catch (error) {
+      console.error('Failed to remove spot:', error)
+      alert('Failed to remove spot. Please try again.')
     } finally {
       setIsUpdating(false)
     }
@@ -299,20 +361,33 @@ export default function PlanDetailsPage() {
                       </p>
                     )}
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleEditTime(s.id, s.time)
-                    }}
-                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold transition-colors ${
-                      s.time
-                        ? 'bg-white/90 text-gray-800 hover:bg-white'
-                        : 'bg-white/70 text-gray-600 hover:bg-white/90'
-                    }`}
-                  >
-                    <Clock className="h-4 w-4 text-gray-700" />
-                    {s.time || 'Set time'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleEditTime(s.id, s.time)
+                      }}
+                      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold transition-colors ${
+                        s.time
+                          ? 'bg-white/90 text-gray-800 hover:bg-white'
+                          : 'bg-white/70 text-gray-600 hover:bg-white/90'
+                      }`}
+                    >
+                      <Clock className="h-4 w-4 text-gray-700" />
+                      {s.time || 'Set time'}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRemove(s.id)
+                      }}
+                      disabled={isUpdating}
+                      className="inline-flex items-center rounded-full bg-red-500/90 p-2 text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
+                      aria-label={`Remove ${s.title}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -330,9 +405,18 @@ export default function PlanDetailsPage() {
         )}
       </div>
 
-      {/* View Itinerary Map Button */}
-      {spotsForActiveDay.length > 0 && (
-        <div className="mt-6">
+      {/* Add Activity/Spot Button */}
+      <div className="mt-6 space-y-4">
+        <a
+          href={`/?append=1&day=${activeDay}&planId=${itineraryId}`}
+          className="block w-full flex items-center justify-center gap-3 bg-teal-400 hover:bg-teal-500 text-white py-3 px-6 rounded-xl font-semibold transition-colors shadow-md"
+        >
+          <Plus className="h-5 w-5" />
+          Add activity/spot
+        </a>
+
+        {/* View Itinerary Map Button */}
+        {spotsForActiveDay.length > 0 && (
           <button
             onClick={() =>
               router.push(
@@ -344,8 +428,8 @@ export default function PlanDetailsPage() {
             <Map className="h-5 w-5" />
             View Whole Itinerary
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Time Edit Dialog */}
       <Dialog
@@ -396,6 +480,8 @@ export default function PlanDetailsPage() {
           Updating...
         </div>
       )}
+
+      <BottomTabs />
     </div>
   )
 }

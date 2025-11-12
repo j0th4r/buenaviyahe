@@ -182,6 +182,7 @@ function PlanDrawer({
   const params = useSearchParams()
   const appendMode = params.get('append') === '1'
   const dayParam = Number(params.get('day') || '1')
+  const planId = params.get('planId')
   const safeDay =
     Number.isFinite(dayParam) && dayParam > 0 ? dayParam : 1
   const hasItinerary = !!getItinerary()
@@ -189,9 +190,10 @@ function PlanDrawer({
 
   const pricePerNight = (spot.pricing as any)?.pricePerNight || 100
 
-  const handlePrimary = useCallback(() => {
+  const handlePrimary = useCallback(async () => {
     if (isAppending) {
-      appendSpot(
+      const { appendSpotAsync } = await import('@/lib/itinerary-store')
+      await appendSpotAsync(
         {
           title: spot.title,
           image: getImageUrl(spot.images[0]),
@@ -205,7 +207,12 @@ function PlanDrawer({
         safeDay
       )
       onOpenChange(false)
-      router.push(`/planner/itinerary?activeDay=${safeDay}`)
+      // Redirect to plan details if planId exists, otherwise to planner
+      if (planId) {
+        router.push(`/plans/${planId}?activeDay=${safeDay}`)
+      } else {
+        router.push(`/planner/itinerary?activeDay=${safeDay}`)
+      }
       return
     }
     const url = `/planner/new?title=${encodeURIComponent(
@@ -226,6 +233,8 @@ function PlanDrawer({
     onOpenChange,
     dayParam,
     pricePerNight,
+    planId,
+    safeDay,
   ])
 
   return (
