@@ -357,7 +357,7 @@ export function ChatbotWidget() {
                         disabled={isLoading}
                         className="mt-2 w-fit bg-teal-600 text-white hover:bg-teal-700"
                       >
-                        {isLoading ? 'Saving...' : 'Add to planner'}
+                        {isLoading ? 'Saving...' : 'Add to plans'}
                       </Button>
                     )}
                     <span
