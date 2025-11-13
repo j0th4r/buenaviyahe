@@ -262,7 +262,7 @@ export default function SpotSeeMorePage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 border rounded-lg">
                   <div className="text-2xl font-bold text-gray-900">
-                    ₱{pricing.oneNight || '150'}
+                    {pricing.oneNight || '150'}
                   </div>
                   <div className="text-gray-600">per night</div>
                   <div className="text-sm text-gray-500 mt-1">
@@ -271,20 +271,11 @@ export default function SpotSeeMorePage() {
                 </div>
                 <div className="p-4 border rounded-lg bg-teal-50 border-teal-200">
                   <div className="text-2xl font-bold text-gray-900">
-                    ₱{pricing.twoNights || '280'}
+                    {pricing.twoNights || '280'}
                   </div>
                   <div className="text-gray-600">total</div>
                   <div className="text-sm text-teal-600 mt-1">
                     2 nights (save 10%)
-                  </div>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-gray-900">
-                    ₱{pricing.pricePerNight || '140'}
-                  </div>
-                  <div className="text-gray-600">per night</div>
-                  <div className="text-sm text-gray-500 mt-1">
-                    Weekly rate
                   </div>
                 </div>
               </div>
@@ -461,7 +452,7 @@ export default function SpotSeeMorePage() {
                     <div className="flex items-center text-gray-600">
                       <Clock className="h-4 w-4 mr-2" />
                       <span>
-                        Check-in: 3:00 PM | Check-out: 11:00 AM
+                        Check-in: 1:00 PM | Check-out: 11:00 AM
                       </span>
                     </div>
                   </div>
