@@ -188,7 +188,14 @@ export default function SpotSeeMorePage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-700 leading-relaxed">
-                historical info
+                Ocean Bloom began as a private family beach house
+                around 2009 and later opened as a boutique resort,
+                reflecting Buenavista’s shift from purely coastal
+                livelihood to small-scale hospitality on the Manapa
+                shoreline. Its family-run story and location in former
+                Tortosa (now Buenavista) tie it to the area’s
+                long-standing river–sea travel and coastal settlement
+                heritage.
               </p>
             </CardContent>
 
@@ -197,7 +204,12 @@ export default function SpotSeeMorePage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-700 leading-relaxed">
-                aesthetic info
+                The resort blends Mediterranean and rustic Filipino
+                design with landscaped beachfront, offering calm sea
+                views, black-sand shore, and curated garden spaces for
+                an intimate feel. Guests highlight its quiet,
+                small-crowd vibe and sunset-facing beachfront as a
+                quick, near-Butuan escape.
               </p>
             </CardContent>
 
@@ -206,7 +218,14 @@ export default function SpotSeeMorePage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-700 leading-relaxed">
-                Scientific info
+                Positioned in a low-elevation coastal zone near
+                river–sea interfaces, the site benefits from tidal and
+                nearshore processes that shape beach morphology and
+                local biodiversity, making light-touch landscaping and
+                runoff control important. Its participation in
+                green-leaning initiatives aligns with vegetation
+                cover, resource efficiency, and coastal resilience
+                practices
               </p>
             </CardContent>
 
@@ -215,7 +234,11 @@ export default function SpotSeeMorePage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-700 leading-relaxed">
-                Economic info
+                Ocean Bloom draws weekenders and event groups from
+                Butuan and nearby towns, supporting local transport,
+                provisioning, and service jobs within Buenavista. Its
+                boutique events model complements fisheries by
+                diversifying tourism revenue along the Manapa coast.
               </p>
             </CardContent>
           </Card>
